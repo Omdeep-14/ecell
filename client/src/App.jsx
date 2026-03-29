@@ -2,14 +2,48 @@ import { useState, useEffect, useRef } from "react";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import heroPhoto from "./assets/hero-photo.jpg";
 import aboutVideo from "./assets/about-video.mp4";
+import galEntrepreneurs from "./assets/Gallery/Entrepreneurs .png";
+import galIgnitePitch from "./assets/Gallery/Ignite Pitch .png";
+import galIgnitePitch20 from "./assets/Gallery/IGNITE PITCH 2.0 .png";
+import galIlluminate1 from "./assets/Gallery/Illuminate 1.png";
+import galIlluminate from "./assets/Gallery/Illuminate.png";
+import galInnovatExpo20 from "./assets/Gallery/InnovatExpo 2.0.png";
+import galInnovatExpo from "./assets/Gallery/InnovatExpo.png";
+import galProject from "./assets/Gallery/Project .png";
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000";
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
-const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const hasSupabaseConfig = Boolean(SUPABASE_URL && SUPABASE_ANON_KEY);
+
+if (!hasSupabaseConfig) {
+  console.error(
+    "Missing Supabase client env vars. Set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in client/.env.",
+  );
+}
+
+const supabase = createClient(
+  SUPABASE_URL || "https://your-project-ref.supabase.co",
+  SUPABASE_ANON_KEY || "your-anon-key",
+);
 
 const EVENT_BUCKET = "event-images";
 const GALLERY_BUCKET = "gallery-images";
+
+const SPONSOR_LOGOS = [
+  { file: "7eleven.png", name: "7-Eleven" },
+  { file: "aprilia.png", name: "Aprilia" },
+  { file: "studyin.jpeg", name: "StudyIn" },
+  { file: "hdfc.png", name: "HDFC Credila" },
+  { file: "fateh.jpeg", name: "Fateh" },
+  { file: "unstop.jpeg", name: "Unstop" },
+  { file: "xtn.jpeg", name: "XTN" },
+  { file: "studentrebel.jpeg", name: "The Student Rebel" },
+  { file: "redbull.jpeg", name: "Red Bull" },
+  { file: "kalbhor.jpeg", name: "Kalbhor Group" },
+];
+const SPONSOR_MARQUEE = [...SPONSOR_LOGOS, ...SPONSOR_LOGOS];
+const sponsorSrc = (file) => new URL(`./assets/sponsors/${file}`, import.meta.url).href;
 
 async function apiFetch(path, options = {}) {
   const res = await fetch(`${API_BASE}${path}`, {
@@ -149,15 +183,15 @@ nav{position:fixed;top:0;left:0;right:0;z-index:1000;background:rgba(255,255,255
 .init-title{font-size:16px;font-weight:700;margin-bottom:8px;}
 .init-desc{font-size:13.5px;color:var(--gray-400);line-height:1.75;}
 
-/* ── SPEAKERS ── */
-.home-speakers{padding:72px var(--px);background:var(--white);}
-.speakers-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:20px;margin-top:48px;}
-@media(min-width:768px){.speakers-grid{grid-template-columns:repeat(4,1fr);}}
-.speaker-card{text-align:center;}
-.speaker-img-placeholder{width:100%;aspect-ratio:1;background:linear-gradient(135deg,var(--gray-200),var(--gray-100));display:flex;align-items:center;justify-content:center;font-family:var(--display);font-size:clamp(32px,8vw,48px);color:var(--gray-400);margin-bottom:14px;}
-.speaker-name{font-size:14px;font-weight:700;}
-.speaker-role{font-size:12px;color:var(--gray-400);margin-top:4px;}
-.speaker-tag{font-size:11px;color:var(--red);letter-spacing:1.5px;text-transform:uppercase;margin-top:6px;}
+/* ── SPONSORS ── */
+.home-sponsors{padding:72px var(--px);background:var(--white);}
+.sponsors-track-wrap{margin-top:48px;overflow:hidden;white-space:nowrap;padding:32px 0;background:var(--white);border-top:1px solid var(--gray-200);border-bottom:1px solid var(--gray-200);}
+.sponsors-track{display:inline-flex;align-items:center;gap:0;animation:sponsorScroll 28s linear infinite;white-space:nowrap;}
+.sponsors-track-wrap:hover .sponsors-track{animation-play-state:paused;}
+.sponsor-logo-card{display:inline-flex;align-items:center;justify-content:center;padding:16px 40px;border-right:1px solid var(--gray-200);flex-shrink:0;transition:transform .3s;cursor:pointer;}
+.sponsor-logo-card:hover{transform:scale(1.05);}
+.sponsor-logo-img{height:80px;width:auto;max-width:180px;object-fit:contain;display:block;}
+@keyframes sponsorScroll{from{transform:translateX(0);}to{transform:translateX(-50%);}}
 
 /* ── TESTIMONIALS ── */
 .home-testimonials{padding:72px var(--px);background:var(--black);}
@@ -171,7 +205,8 @@ nav{position:fixed;top:0;left:0;right:0;z-index:1000;background:rgba(255,255,255
 
 /* ── PAGE HERO ── */
 .page-hero{padding:120px var(--px) 64px;background:linear-gradient(160deg,#fff 50%,#111 100%);min-height:46vh;display:flex;align-items:flex-end;}
-.page-hero p{color:rgba(255,255,255,.55);font-size:15px;max-width:420px;line-height:1.7;margin-top:14px;}
+.page-hero .section-title{color:var(--black);}
+.page-hero p{color:var(--gray-600);font-size:15px;max-width:420px;line-height:1.7;margin-top:14px;}
 
 /* ── ABOUT VIDEO ── */
 .about-video-wrap{width:100%;background:var(--black);line-height:0;position:relative;overflow:hidden;max-height:520px;}
@@ -373,9 +408,11 @@ footer{background:var(--black);color:white;padding:64px var(--px) 36px;}
 .auth-back button{background:none;border:none;color:var(--black);cursor:pointer;font-weight:600;font-family:var(--sans);font-size:13px;text-decoration:underline;}
 
 /* ── ADMIN DASHBOARD ── */
-.admin-page{min-height:100svh;background:var(--gray-100);display:flex;flex-direction:column;}
+.admin-page{height:100svh;background:var(--gray-100);display:flex;flex-direction:column;overflow:hidden;}
 .admin-topbar{background:var(--black);padding:0 var(--px);height:60px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;flex-shrink:0;}
 .admin-topbar-left{display:flex;align-items:center;gap:14px;}
+.admin-menu-toggle{background:none;border:1px solid rgba(255,255,255,.15);color:rgba(255,255,255,.7);padding:7px 14px;font-size:12px;font-weight:600;letter-spacing:2px;cursor:pointer;font-family:var(--sans);display:flex;align-items:center;gap:8px;transition:all .2s;}
+.admin-menu-toggle:hover{border-color:var(--red);color:white;}
 .admin-topbar-logo{font-family:var(--display);font-size:22px;color:white;letter-spacing:1px;}
 .admin-topbar-logo span{color:var(--red);}
 .admin-badge{font-size:9px;letter-spacing:2px;text-transform:uppercase;background:var(--red);color:white;padding:3px 8px;font-weight:600;}
@@ -386,9 +423,12 @@ footer{background:var(--black);color:white;padding:64px var(--px) 36px;}
 .admin-logout-btn:hover{border-color:var(--red);color:white;}
 .admin-role-badge{font-size:9px;letter-spacing:1.5px;text-transform:uppercase;padding:2px 8px;font-weight:600;background:rgba(212,43,43,.12);color:var(--red);margin-left:6px;}
 
-/* ── ADMIN BODY LAYOUT (FIXED) ── */
-.admin-body{display:flex;flex:1;min-height:0;overflow:hidden;}
-.admin-sidebar{width:200px;flex-shrink:0;background:#111;border-right:1px solid #222;padding:20px 0;overflow-y:auto;display:flex;flex-direction:column;height:100%;}
+/* ── ADMIN BODY LAYOUT ── */
+.admin-body{display:flex;flex:1;min-height:0;position:relative;}
+.admin-sidebar{position:fixed;top:60px;left:0;height:calc(100svh - 60px);width:240px;background:#111;border-right:1px solid #222;padding:20px 0;overflow-y:auto;display:flex;flex-direction:column;z-index:200;transform:translateX(-100%);transition:transform .28s ease;box-shadow:4px 0 24px rgba(0,0,0,.4);}
+.admin-sidebar.open{transform:translateX(0);}
+.admin-sidebar-backdrop{position:fixed;top:60px;left:0;right:0;bottom:0;background:rgba(0,0,0,.45);z-index:199;display:none;}
+.admin-sidebar-backdrop.open{display:block;}
 .admin-sidebar-label{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:#555;padding:0 16px 8px;display:block;}
 .admin-nav-btn{display:flex;align-items:center;gap:10px;width:100%;padding:10px 16px;background:none;border:none;color:#777;font-size:13px;font-family:var(--sans);cursor:pointer;text-align:left;transition:color .15s,background .15s;}
 .admin-nav-btn:hover{color:#ddd;background:#1a1a1a;}
@@ -1551,6 +1591,7 @@ function TestimonialsManager() {
 ══════════════════════════════════════════════════════════════ */
 function AdminDashboard({ session, userRole, onLogout, onGoToSite }) {
   const [tab, setTab] = useState("overview");
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [events, setEvents] = useState([]);
   const [stats, setStats] = useState([]);
   const [loadingOverview, setLoadingOverview] = useState(true);
@@ -1575,7 +1616,6 @@ function AdminDashboard({ session, userRole, onLogout, onGoToSite }) {
     { id: "overview", icon: "fa-th-large", label: "Overview" },
     { id: "events", icon: "fa-calendar", label: "Events" },
     { id: "gallery", icon: "fa-images", label: "Gallery" },
-    { id: "speakers", icon: "fa-microphone", label: "Speakers" },
     { id: "testimonials", icon: "fa-quote-left", label: "Testimonials" },
   ];
 
@@ -1583,6 +1623,13 @@ function AdminDashboard({ session, userRole, onLogout, onGoToSite }) {
     <div className="admin-page">
       <div className="admin-topbar">
         <div className="admin-topbar-left">
+          <button
+            className="admin-menu-toggle"
+            onClick={() => setSidebarOpen((o) => !o)}
+          >
+            <i className={`fas ${sidebarOpen ? "fa-times" : "fa-bars"}`}></i>
+            MENU
+          </button>
           <div className="admin-topbar-logo">
             E-CELL <span>MESW</span>COE
           </div>
@@ -1597,13 +1644,21 @@ function AdminDashboard({ session, userRole, onLogout, onGoToSite }) {
       </div>
 
       <div className="admin-body">
-        <nav className="admin-sidebar">
+        <div
+          className={`admin-sidebar-backdrop${sidebarOpen ? " open" : ""}`}
+          onClick={() => setSidebarOpen(false)}
+        />
+
+        <nav className={`admin-sidebar${sidebarOpen ? " open" : ""}`}>
           <span className="admin-sidebar-label">Menu</span>
           {TABS.map((t) => (
             <button
               key={t.id}
               className={`admin-nav-btn${tab === t.id ? " active" : ""}`}
-              onClick={() => setTab(t.id)}
+              onClick={() => {
+                setTab(t.id);
+                setSidebarOpen(false);
+              }}
             >
               <i className={`fas ${t.icon}`} style={{ width: 16 }}></i>
               {t.label}
@@ -1700,7 +1755,6 @@ function AdminDashboard({ session, userRole, onLogout, onGoToSite }) {
           )}
           {tab === "events" && <EventsManager />}
           {tab === "gallery" && <GalleryManager />}
-          {tab === "speakers" && <SpeakersManager />}
           {tab === "testimonials" && <TestimonialsManager />}
         </main>
       </div>
@@ -2113,12 +2167,12 @@ function HomePage({ onNav, onJoin }) {
         </div>
       </div>
 
-      <div className="home-speakers">
-        <span className="section-label reveal">Voices That Inspire</span>
+      <div className="home-sponsors">
+        <span className="section-label reveal">Trusted By</span>
         <h2 className="section-title reveal">
-          Inspirational
+          Our Sponsors &
           <br />
-          Speakers
+          Partners
         </h2>
         <p
           style={{
@@ -2130,49 +2184,21 @@ function HomePage({ onNav, onJoin }) {
           }}
           className="reveal"
         >
-          We bring together founders, innovators, and industry leaders to share
-          stories that ignite entrepreneurial ambition.
+          Proudly supported by leading brands and organizations who believe in
+          the next generation of entrepreneurs.
         </p>
-        <div className="speakers-grid">
-          {loading
-            ? [0, 1, 2, 3].map((i) => (
-                <div className="speaker-card" key={i}>
-                  <div
-                    className="speaker-img-placeholder skeleton"
-                    style={{ background: "none" }}
-                  ></div>
-                  <div
-                    className="skeleton skeleton-block"
-                    style={{ width: "70%", margin: "14px auto 6px" }}
-                  />
-                  <div
-                    className="skeleton skeleton-block"
-                    style={{ width: "50%", margin: "0 auto" }}
-                  />
-                </div>
-              ))
-            : speakers.length > 0
-              ? speakers.map((sp) => (
-                  <div className="speaker-card reveal" key={sp.id}>
-                    <div className="speaker-img-placeholder">{sp.initial}</div>
-                    <div className="speaker-name">{sp.name}</div>
-                    <div className="speaker-role">{sp.role}</div>
-                    <div className="speaker-tag">{sp.tag}</div>
-                  </div>
-                ))
-              : [
-                  ["A", "Speaker Name", "Founder & CEO", "Ignite Pitch 2.0"],
-                  ["B", "Speaker Name", "Venture Capitalist", "Illuminate 2.0"],
-                  ["C", "Speaker Name", "Serial Entrepreneur", "VentureSphere"],
-                  ["D", "Speaker Name", "Product Lead", "Leadership Bootcamp"],
-                ].map(([i, n, r, t], idx) => (
-                  <div className="speaker-card reveal" key={idx}>
-                    <div className="speaker-img-placeholder">{i}</div>
-                    <div className="speaker-name">{n}</div>
-                    <div className="speaker-role">{r}</div>
-                    <div className="speaker-tag">{t}</div>
-                  </div>
-                ))}
+        <div className="sponsors-track-wrap reveal">
+          <div className="sponsors-track">
+            {SPONSOR_MARQUEE.map((sp, i) => (
+              <div className="sponsor-logo-card" key={i}>
+                <img
+                  src={sponsorSrc(sp.file)}
+                  alt={sp.name}
+                  className="sponsor-logo-img"
+                />
+              </div>
+            ))}
+          </div>
         </div>
       </div>
 
@@ -2271,7 +2297,7 @@ function AboutPage({ onNav }) {
           <span className="section-label">Our Story</span>
           <h1
             className="section-title"
-            style={{ fontSize: "clamp(52px,11vw,130px)", color: "white" }}
+            style={{ fontSize: "clamp(52px,11vw,130px)" }}
           >
             About
             <br />
@@ -2518,7 +2544,7 @@ function EventsPage({ onNav }) {
           <span className="section-label">What We Do</span>
           <h1
             className="section-title"
-            style={{ fontSize: "clamp(52px,11vw,130px)", color: "white" }}
+            style={{ fontSize: "clamp(52px,11vw,130px)" }}
           >
             Flagship
             <br />
@@ -2646,17 +2672,82 @@ function EventsPage({ onNav }) {
 }
 
 /* ─── GALLERY PAGE ─── */
+const localGallery = [
+  {
+    id: 1,
+    label: "Entrepreneurs",
+    cat: "nec",
+    wide: true,
+    image_url: galEntrepreneurs,
+  },
+  {
+    id: 2,
+    label: "Ignite Pitch",
+    cat: "ignite",
+    wide: false,
+    image_url: galIgnitePitch,
+  },
+  {
+    id: 3,
+    label: "Ignite Pitch 2.0",
+    cat: "ignite",
+    wide: false,
+    image_url: galIgnitePitch20,
+  },
+  {
+    id: 4,
+    label: "Illuminate 1",
+    cat: "illuminate",
+    wide: true,
+    image_url: galIlluminate1,
+  },
+  {
+    id: 5,
+    label: "Illuminate",
+    cat: "illuminate",
+    wide: false,
+    image_url: galIlluminate,
+  },
+  {
+    id: 6,
+    label: "InnovatExpo 2.0",
+    cat: "venture",
+    wide: false,
+    image_url: galInnovatExpo20,
+  },
+  {
+    id: 7,
+    label: "InnovatExpo",
+    cat: "venture",
+    wide: false,
+    image_url: galInnovatExpo,
+  },
+  {
+    id: 8,
+    label: "Project",
+    cat: "workshops",
+    wide: false,
+    image_url: galProject,
+  },
+];
+
 function GalleryPage({ onNav }) {
-  const [galleryItems, setGalleryItems] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [galleryItems, setGalleryItems] = useState(localGallery);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [activeFilter, setActiveFilter] = useState("all");
   useReveal();
 
   useEffect(() => {
     apiFetch("/api/gallery")
-      .then((data) => setGalleryItems(Array.isArray(data) ? data : []))
-      .catch((err) => setError(err.message || "Failed to load gallery"))
+      .then((data) => {
+        if (Array.isArray(data) && data.length > 0) {
+          setGalleryItems(data);
+        } else {
+          setGalleryItems(localGallery);
+        }
+      })
+      .catch(() => setGalleryItems(localGallery))
       .finally(() => setLoading(false));
   }, []);
   useEffect(() => {
@@ -2687,7 +2778,7 @@ function GalleryPage({ onNav }) {
           <span className="section-label">Captured Moments</span>
           <h1
             className="section-title"
-            style={{ fontSize: "clamp(52px,11vw,130px)", color: "white" }}
+            style={{ fontSize: "clamp(52px,11vw,130px)" }}
           >
             Gallery
           </h1>
@@ -2803,7 +2894,7 @@ function ContactPage({ onNav }) {
           <span className="section-label">Get Involved</span>
           <h1
             className="section-title"
-            style={{ fontSize: "clamp(52px,11vw,130px)", color: "white" }}
+            style={{ fontSize: "clamp(52px,11vw,130px)" }}
           >
             Contact
           </h1>
