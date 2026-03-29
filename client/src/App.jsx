@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import heroPhoto from "./assets/hero-photo.jpg";
 import aboutVideo from "./assets/about-video.mp4";
@@ -7,6 +7,9 @@ const API_BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000";
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+const EVENT_BUCKET = "event-images";
+const GALLERY_BUCKET = "gallery-images";
 
 async function apiFetch(path, options = {}) {
   const res = await fetch(`${API_BASE}${path}`, {
@@ -261,6 +264,7 @@ nav{position:fixed;top:0;left:0;right:0;z-index:1000;background:rgba(255,255,255
 .gal-item.wide{grid-column:span 2;}
 .gal-placeholder{width:100%;height:100%;min-height:140px;background:linear-gradient(135deg,var(--gray-200),var(--gray-100));display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;transition:background .25s;}
 .gal-item:hover .gal-placeholder{background:linear-gradient(135deg,#ddd,#ccc);}
+.gal-real-img{width:100%;height:100%;object-fit:cover;display:block;}
 .gal-icon-el{font-size:22px;color:var(--gray-400);}
 .gal-label-el{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--gray-400);}
 .gal-overlay{position:absolute;inset:0;background:rgba(0,0,0,.68);display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .3s;}
@@ -311,9 +315,13 @@ nav{position:fixed;top:0;left:0;right:0;z-index:1000;background:rgba(255,255,255
 .modal-close-btn:hover{color:white;}
 .modal-ev-tag{font-size:10.5px;letter-spacing:2.5px;text-transform:uppercase;color:var(--red);display:block;margin-bottom:10px;}
 .modal-ev-title{font-family:var(--display);font-size:clamp(36px,8vw,52px);letter-spacing:1px;line-height:1;}
+.modal-ev-image{width:100%;max-height:260px;object-fit:cover;display:block;}
 .modal-body-section{padding:32px 28px;}
 @media(min-width:480px){.modal-body-section{padding:44px 40px;}}
 .modal-body-section p{font-size:15px;color:var(--gray-600);line-height:1.88;}
+.modal-form-link{display:inline-flex;align-items:center;gap:8px;margin-top:20px;background:var(--red);color:white;padding:12px 22px;font-size:13px;font-weight:600;letter-spacing:1px;text-transform:uppercase;text-decoration:none;transition:background .2s;}
+.modal-form-link:hover{background:var(--red-dark);}
+.modal-reg-date{font-size:12px;color:var(--gray-400);margin-top:14px;letter-spacing:.5px;}
 .join-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.82);z-index:2000;align-items:center;justify-content:center;padding:16px;}
 .join-overlay.open{display:flex;}
 .join-box{background:white;padding:36px 28px;max-width:480px;width:100%;max-height:90svh;overflow-y:auto;animation:slideUp .3s ease;position:relative;}
@@ -365,8 +373,8 @@ footer{background:var(--black);color:white;padding:64px var(--px) 36px;}
 .auth-back button{background:none;border:none;color:var(--black);cursor:pointer;font-weight:600;font-family:var(--sans);font-size:13px;text-decoration:underline;}
 
 /* ── ADMIN DASHBOARD ── */
-.admin-page{min-height:100svh;background:var(--gray-100);}
-.admin-topbar{background:var(--black);padding:0 var(--px);height:60px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;}
+.admin-page{min-height:100svh;background:var(--gray-100);display:flex;flex-direction:column;}
+.admin-topbar{background:var(--black);padding:0 var(--px);height:60px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;flex-shrink:0;}
 .admin-topbar-left{display:flex;align-items:center;gap:14px;}
 .admin-topbar-logo{font-family:var(--display);font-size:22px;color:white;letter-spacing:1px;}
 .admin-topbar-logo span{color:var(--red);}
@@ -376,33 +384,104 @@ footer{background:var(--black);color:white;padding:64px var(--px) 36px;}
 @media(min-width:640px){.admin-user-email{display:block;}}
 .admin-logout-btn{background:transparent;border:1px solid rgba(255,255,255,.15);color:rgba(255,255,255,.6);padding:7px 16px;font-size:12px;font-weight:500;cursor:pointer;transition:all .2s;font-family:var(--sans);display:flex;align-items:center;gap:6px;}
 .admin-logout-btn:hover{border-color:var(--red);color:white;}
-.admin-content{padding:40px var(--px);}
-.admin-welcome{margin-bottom:36px;}
-.admin-welcome h1{font-family:var(--display);font-size:clamp(36px,7vw,56px);line-height:1;margin-bottom:6px;}
+.admin-role-badge{font-size:9px;letter-spacing:1.5px;text-transform:uppercase;padding:2px 8px;font-weight:600;background:rgba(212,43,43,.12);color:var(--red);margin-left:6px;}
+
+/* ── ADMIN BODY LAYOUT (FIXED) ── */
+.admin-body{display:flex;flex:1;min-height:0;overflow:hidden;}
+.admin-sidebar{width:200px;flex-shrink:0;background:#111;border-right:1px solid #222;padding:20px 0;overflow-y:auto;display:flex;flex-direction:column;height:100%;}
+.admin-sidebar-label{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:#555;padding:0 16px 8px;display:block;}
+.admin-nav-btn{display:flex;align-items:center;gap:10px;width:100%;padding:10px 16px;background:none;border:none;color:#777;font-size:13px;font-family:var(--sans);cursor:pointer;text-align:left;transition:color .15s,background .15s;}
+.admin-nav-btn:hover{color:#ddd;background:#1a1a1a;}
+.admin-nav-btn.active{color:white;background:#1a1a1a;border-left:2px solid var(--red);}
+.admin-main-area{flex:1;min-width:0;overflow-y:auto;padding:32px var(--px);}
+
+/* overview cards */
+.admin-content{}
+.admin-welcome{margin-bottom:28px;}
+.admin-welcome h1{font-family:var(--display);font-size:clamp(36px,7vw,52px);line-height:1;margin-bottom:6px;}
 .admin-welcome p{font-size:14px;color:var(--gray-400);}
-.admin-stats-row{display:grid;grid-template-columns:repeat(2,1fr);gap:2px;background:var(--gray-200);margin-bottom:40px;}
+.admin-stats-row{display:grid;grid-template-columns:repeat(2,1fr);gap:2px;background:var(--gray-200);margin-bottom:32px;}
 @media(min-width:640px){.admin-stats-row{grid-template-columns:repeat(4,1fr);}}
-.admin-stat-card{background:white;padding:28px 20px;}
-.admin-stat-num{font-family:var(--display);font-size:40px;line-height:1;margin-bottom:4px;}
+.admin-stat-card{background:white;padding:24px 20px;}
+.admin-stat-num{font-family:var(--display);font-size:36px;line-height:1;margin-bottom:4px;}
 .admin-stat-label{font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:var(--gray-400);}
-.admin-sections{display:grid;grid-template-columns:1fr;gap:24px;}
-@media(min-width:900px){.admin-sections{grid-template-columns:2fr 1fr;}}
-.admin-card{background:white;padding:28px;}
-.admin-card-title{font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--gray-400);font-weight:600;margin-bottom:20px;padding-bottom:14px;border-bottom:1px solid var(--gray-200);display:flex;align-items:center;justify-content:space-between;}
-.admin-event-row{display:flex;align-items:center;gap:14px;padding:12px 0;border-bottom:1px solid var(--gray-100);}
+
+/* ── ADMIN MANAGER SHARED ── */
+.mgr-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;}
+.mgr-title{font-family:var(--display);font-size:28px;letter-spacing:1px;display:flex;align-items:center;gap:12px;}
+.mgr-count{font-size:12px;color:var(--gray-400);font-weight:400;font-family:var(--sans);}
+.mgr-list{display:flex;flex-direction:column;gap:8px;}
+.mgr-item{display:flex;align-items:center;gap:14px;padding:14px 16px;background:white;border:1px solid var(--gray-200);transition:border-color .15s;}
+.mgr-item:hover{border-color:#bbb;}
+.mgr-item-thumb{width:72px;height:54px;object-fit:cover;flex-shrink:0;border:1px solid var(--gray-200);}
+.mgr-item-thumb-ph{width:72px;height:54px;background:var(--gray-100);display:flex;align-items:center;justify-content:center;font-size:18px;color:var(--gray-400);flex-shrink:0;}
+.mgr-avatar{width:38px;height:38px;border-radius:50%;background:var(--red);display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;color:white;flex-shrink:0;}
+.mgr-item-body{flex:1;min-width:0;}
+.mgr-item-name{font-size:14px;font-weight:700;margin-bottom:4px;}
+.mgr-item-meta{display:flex;flex-wrap:wrap;gap:6px;align-items:center;}
+.mgr-tag{font-size:10px;letter-spacing:1px;text-transform:uppercase;padding:2px 7px;background:var(--gray-100);border:1px solid var(--gray-200);color:var(--gray-600);}
+.mgr-tag-red{background:rgba(212,43,43,.08);border-color:rgba(212,43,43,.2);color:var(--red);}
+.mgr-tag-blue{background:#eff6ff;border-color:#bfdbfe;color:#1d4ed8;}
+.mgr-date{font-size:11px;color:var(--gray-400);}
+.mgr-excerpt{font-size:12px;color:var(--gray-400);margin-top:4px;line-height:1.5;}
+.mgr-actions{display:flex;gap:8px;flex-shrink:0;}
+.mgr-empty{padding:40px;text-align:center;color:var(--gray-400);border:1px dashed var(--gray-200);background:white;font-size:13px;}
+
+/* form */
+.mgr-form{max-width:700px;}
+.mgr-back{background:none;border:none;color:var(--gray-400);cursor:pointer;font-size:12px;font-family:var(--sans);letter-spacing:.5px;margin-bottom:18px;padding:0;display:flex;align-items:center;gap:6px;}
+.mgr-back:hover{color:var(--black);}
+.mgr-form-title{font-family:var(--display);font-size:26px;letter-spacing:1px;margin-bottom:24px;}
+.mgr-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:20px;}
+.mgr-field{display:flex;flex-direction:column;gap:5px;}
+.mgr-field.full{grid-column:1/-1;}
+.mgr-field.check{justify-content:flex-end;}
+.mgr-field label{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--gray-400);font-weight:600;}
+.mgr-field input,.mgr-field textarea,.mgr-field select{border:1px solid var(--gray-200);background:var(--gray-100);padding:10px 12px;font-size:13px;font-family:var(--sans);color:var(--black);outline:none;transition:border-color .15s;resize:vertical;}
+.mgr-field input:focus,.mgr-field textarea:focus,.mgr-field select:focus{border-color:var(--black);background:white;}
+.mgr-img-drop{border:1px dashed var(--gray-200);background:var(--gray-100);min-height:110px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:border-color .15s;overflow:hidden;}
+.mgr-img-drop:hover{border-color:var(--red);}
+.mgr-img-preview{width:100%;max-height:180px;object-fit:cover;display:block;}
+.mgr-img-ph{font-size:12px;color:var(--gray-400);letter-spacing:.5px;}
+.mgr-clear-img{background:none;border:none;color:var(--red);cursor:pointer;font-size:11px;font-family:var(--sans);margin-top:5px;padding:0;}
+.mgr-form-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:4px;}
+.mgr-msg{padding:10px 14px;font-size:12px;margin-bottom:16px;border-radius:2px;}
+.mgr-msg.ok{background:#f0fdf4;border:1px solid #86efac;color:#15803d;}
+.mgr-msg.err{background:#fef2f2;border:1px solid #fca5a5;color:#b91c1c;}
+
+/* buttons */
+.btn-adm{padding:9px 18px;font-size:12px;font-family:var(--sans);letter-spacing:.5px;font-weight:600;cursor:pointer;border:none;transition:opacity .15s,background .15s;}
+.btn-adm:disabled{opacity:.4;cursor:not-allowed;}
+.btn-adm.primary{background:var(--red);color:white;}
+.btn-adm.primary:hover:not(:disabled){background:var(--red-dark);}
+.btn-adm.cancel{background:var(--gray-100);color:var(--black);border:1px solid var(--gray-200);}
+.btn-adm.cancel:hover{border-color:#999;}
+.btn-adm.edit{background:white;color:var(--black);border:1px solid var(--gray-200);}
+.btn-adm.edit:hover{border-color:#888;}
+.btn-adm.del{background:transparent;color:var(--red);border:1px solid var(--red);}
+.btn-adm.del:hover:not(:disabled){background:var(--red);color:white;}
+
+/* roles manager */
+.roles-add-box{background:white;border:1px solid var(--gray-200);padding:20px;margin-bottom:12px;}
+.roles-add-title{font-size:13px;font-weight:700;letter-spacing:.5px;margin-bottom:4px;}
+.roles-add-hint{font-size:12px;color:var(--gray-400);margin-bottom:12px;}
+.roles-add-row{display:flex;gap:10px;}
+.roles-input{flex:1;border:1px solid var(--gray-200);background:var(--gray-100);padding:10px 12px;font-size:13px;font-family:var(--sans);outline:none;}
+.roles-input:focus{border-color:var(--black);}
+.role-chip{font-size:10px;letter-spacing:1px;text-transform:uppercase;padding:2px 8px;font-weight:700;border-radius:2px;}
+.role-chip.superadmin{background:var(--red);color:white;}
+.role-chip.admin{background:#1d4ed8;color:white;}
+
+/* overview events list */
+.admin-card{background:white;padding:24px;margin-bottom:16px;}
+.admin-card-title{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--gray-400);font-weight:600;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid var(--gray-200);display:flex;align-items:center;justify-content:space-between;}
+.admin-event-row{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--gray-100);}
 .admin-event-row:last-child{border-bottom:none;}
 .admin-event-num{font-family:var(--display);font-size:20px;color:var(--gray-200);width:28px;flex-shrink:0;}
 .admin-event-name{font-size:13px;font-weight:600;margin-bottom:2px;}
 .admin-event-tag{font-size:11px;color:var(--red);letter-spacing:1px;text-transform:uppercase;}
-.admin-quick-action{display:flex;align-items:center;gap:12px;padding:14px 16px;border:1px solid var(--gray-200);margin-bottom:10px;cursor:pointer;transition:all .2s;background:white;}
-.admin-quick-action:hover{border-color:var(--black);background:var(--black);color:white;}
-.admin-quick-action:hover .aqa-icon{color:var(--red);}
-.admin-quick-action:hover .aqa-label{color:white;}
-.aqa-icon{font-size:16px;color:var(--gray-400);width:20px;flex-shrink:0;transition:color .2s;}
-.aqa-label{font-size:13px;font-weight:500;transition:color .2s;}
-.admin-go-site{display:inline-flex;align-items:center;gap:8px;font-size:12px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--gray-600);border:1px solid var(--gray-200);padding:10px 18px;cursor:pointer;background:white;font-family:var(--sans);transition:all .2s;margin-top:24px;}
+.admin-go-site{display:inline-flex;align-items:center;gap:8px;font-size:12px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--gray-600);border:1px solid var(--gray-200);padding:10px 18px;cursor:pointer;background:white;font-family:var(--sans);transition:all .2s;}
 .admin-go-site:hover{background:var(--black);color:white;border-color:var(--black);}
-.admin-role-badge{font-size:9px;letter-spacing:1.5px;text-transform:uppercase;padding:2px 8px;font-weight:600;background:rgba(212,43,43,.12);color:var(--red);margin-left:6px;}
 `;
 
 /* ─── REVEAL HOOK ─── */
@@ -437,7 +516,6 @@ function reRunReveal() {
   }, 80);
 }
 
-/* ─── LOADING SKELETON ─── */
 function LoadingSkeleton({ rows = 3 }) {
   return (
     <div style={{ padding: "24px 0" }}>
@@ -448,6 +526,1184 @@ function LoadingSkeleton({ rows = 3 }) {
           style={{ width: `${70 + (i % 3) * 10}%` }}
         />
       ))}
+    </div>
+  );
+}
+
+/* ─── SUPABASE HELPERS ─── */
+async function getMyRole() {
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return null;
+  const { data } = await supabase
+    .from("user_roles")
+    .select("role")
+    .eq("user_id", user.id)
+    .single();
+  return data?.role ?? null;
+}
+
+async function uploadToBucket(bucket, id, file) {
+  if (!file) return null;
+  const ext = file.name.split(".").pop();
+  const path = `${id}.${ext}`;
+  await supabase.storage.from(bucket).upload(path, file, { upsert: true });
+  const { data } = supabase.storage.from(bucket).getPublicUrl(path);
+  return data.publicUrl;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   ADMIN MANAGERS
+══════════════════════════════════════════════════════════════ */
+
+const EMPTY_EVENT = {
+  title: "",
+  date: "",
+  tag: "",
+  content: "",
+  registration_deadline: "",
+  form_link: "",
+  image_url: "",
+  sort_order: 0,
+};
+
+function EventsManager() {
+  const [events, setEvents] = useState([]);
+  const [view, setView] = useState("list");
+  const [form, setForm] = useState(EMPTY_EVENT);
+  const [imgFile, setImgFile] = useState(null);
+  const [preview, setPreview] = useState(null);
+  const [saving, setSaving] = useState(false);
+  const [deleting, setDeleting] = useState(null);
+  const [msg, setMsg] = useState(null);
+  const fileRef = useRef();
+
+  useEffect(() => {
+    load();
+  }, []);
+
+  async function load() {
+    const { data } = await supabase
+      .from("events")
+      .select("*")
+      .order("sort_order");
+    setEvents(data ?? []);
+  }
+
+  function openNew() {
+    setForm(EMPTY_EVENT);
+    setImgFile(null);
+    setPreview(null);
+    setView("new");
+  }
+  function openEdit(ev) {
+    setForm({
+      title: ev.title,
+      date: ev.date,
+      tag: ev.tag,
+      content: ev.content,
+      registration_deadline: ev.registration_deadline ?? "",
+      form_link: ev.form_link ?? "",
+      image_url: ev.image_url ?? "",
+      sort_order: ev.sort_order ?? 0,
+    });
+    setImgFile(null);
+    setPreview(ev.image_url || null);
+    setView(ev.id);
+  }
+  function f(e) {
+    setForm((p) => ({ ...p, [e.target.name]: e.target.value }));
+  }
+
+  async function save() {
+    if (!form.title || !form.date || !form.tag || !form.content) {
+      setMsg({
+        t: "err",
+        m: "Title, date, tag, and description are required.",
+      });
+      return;
+    }
+    setSaving(true);
+    try {
+      if (view === "new") {
+        const { data: ins, error } = await supabase
+          .from("events")
+          .insert([{ ...form, image_url: "" }])
+          .select()
+          .single();
+        if (error) throw error;
+        const url = await uploadToBucket(EVENT_BUCKET, ins.id, imgFile);
+        if (url)
+          await supabase
+            .from("events")
+            .update({ image_url: url })
+            .eq("id", ins.id);
+      } else {
+        const url = imgFile
+          ? await uploadToBucket(EVENT_BUCKET, view, imgFile)
+          : form.image_url;
+        const { error } = await supabase
+          .from("events")
+          .update({
+            ...form,
+            image_url: url ?? "",
+            updated_at: new Date().toISOString(),
+          })
+          .eq("id", view);
+        if (error) throw error;
+      }
+      setMsg({
+        t: "ok",
+        m: view === "new" ? "Event created!" : "Event updated!",
+      });
+      await load();
+      setTimeout(() => {
+        setView("list");
+        setMsg(null);
+      }, 1000);
+    } catch (e) {
+      setMsg({ t: "err", m: e.message });
+    }
+    setSaving(false);
+  }
+
+  async function del(ev) {
+    if (!confirm(`Delete "${ev.title}"?`)) return;
+    setDeleting(ev.id);
+    if (ev.image_url) {
+      const path = ev.image_url.split(`/${EVENT_BUCKET}/`)[1];
+      if (path) await supabase.storage.from(EVENT_BUCKET).remove([path]);
+    }
+    await supabase.from("events").delete().eq("id", ev.id);
+    await load();
+    setDeleting(null);
+  }
+
+  if (view !== "list")
+    return (
+      <div className="mgr-form">
+        <button
+          className="mgr-back"
+          onClick={() => {
+            setView("list");
+            setMsg(null);
+          }}
+        >
+          ← Back to Events
+        </button>
+        <div className="mgr-form-title">
+          {view === "new" ? "New Event" : "Edit Event"}
+        </div>
+        {msg && <div className={`mgr-msg ${msg.t}`}>{msg.m}</div>}
+        <div className="mgr-grid">
+          <div className="mgr-field full">
+            <label>Event Title *</label>
+            <input
+              name="title"
+              value={form.title}
+              onChange={f}
+              placeholder="IGNITE PITCH 3.0"
+            />
+          </div>
+          <div className="mgr-field">
+            <label>Date / Period *</label>
+            <input
+              name="date"
+              value={form.date}
+              onChange={f}
+              placeholder="January 2025"
+            />
+          </div>
+          <div className="mgr-field">
+            <label>Tag *</label>
+            <input
+              name="tag"
+              value={form.tag}
+              onChange={f}
+              placeholder="Pitch Competition"
+            />
+          </div>
+          <div className="mgr-field">
+            <label>Registration Deadline</label>
+            <input
+              name="registration_deadline"
+              type="date"
+              value={form.registration_deadline}
+              onChange={f}
+            />
+          </div>
+          <div className="mgr-field">
+            <label>Google Form Link</label>
+            <input
+              name="form_link"
+              value={form.form_link}
+              onChange={f}
+              placeholder="https://forms.gle/..."
+            />
+          </div>
+          <div className="mgr-field">
+            <label>Sort Order</label>
+            <input
+              name="sort_order"
+              type="number"
+              value={form.sort_order}
+              onChange={f}
+            />
+          </div>
+          <div className="mgr-field full">
+            <label>Description *</label>
+            <textarea
+              name="content"
+              value={form.content}
+              onChange={f}
+              rows={5}
+              placeholder="Describe the event..."
+            />
+          </div>
+          <div className="mgr-field full">
+            <label>Event Image</label>
+            <div
+              className="mgr-img-drop"
+              onClick={() => fileRef.current.click()}
+            >
+              {preview ? (
+                <img src={preview} className="mgr-img-preview" alt="preview" />
+              ) : (
+                <span className="mgr-img-ph">Click to upload image</span>
+              )}
+            </div>
+            <input
+              ref={fileRef}
+              type="file"
+              accept="image/*"
+              style={{ display: "none" }}
+              onChange={(e) => {
+                const file = e.target.files[0];
+                if (file) {
+                  setImgFile(file);
+                  setPreview(URL.createObjectURL(file));
+                }
+              }}
+            />
+            {preview && (
+              <button
+                className="mgr-clear-img"
+                onClick={() => {
+                  setPreview(null);
+                  setImgFile(null);
+                  setForm((p) => ({ ...p, image_url: "" }));
+                }}
+              >
+                Remove image
+              </button>
+            )}
+          </div>
+        </div>
+        <div className="mgr-form-actions">
+          <button
+            className="btn-adm cancel"
+            onClick={() => {
+              setView("list");
+              setMsg(null);
+            }}
+          >
+            Cancel
+          </button>
+          <button className="btn-adm primary" onClick={save} disabled={saving}>
+            {saving ? "Saving…" : "Save Event"}
+          </button>
+        </div>
+      </div>
+    );
+
+  return (
+    <div>
+      <div className="mgr-header">
+        <div className="mgr-title">
+          Events <span className="mgr-count">{events.length} total</span>
+        </div>
+        <button className="btn-adm primary" onClick={openNew}>
+          + New Event
+        </button>
+      </div>
+      <div className="mgr-list">
+        {events.map((ev) => (
+          <div className="mgr-item" key={ev.id}>
+            {ev.image_url ? (
+              <img
+                src={ev.image_url}
+                className="mgr-item-thumb"
+                alt={ev.title}
+              />
+            ) : (
+              <div className="mgr-item-thumb-ph">
+                <i className="fas fa-calendar" />
+              </div>
+            )}
+            <div className="mgr-item-body">
+              <div className="mgr-item-name">{ev.title}</div>
+              <div className="mgr-item-meta">
+                <span className="mgr-tag mgr-tag-red">{ev.tag}</span>
+                <span className="mgr-date">{ev.date}</span>
+                {ev.registration_deadline && (
+                  <span className="mgr-date">
+                    Reg. by {ev.registration_deadline}
+                  </span>
+                )}
+                {ev.form_link && (
+                  <a
+                    href={ev.form_link}
+                    target="_blank"
+                    rel="noreferrer"
+                    style={{ fontSize: 11, color: "var(--red)" }}
+                  >
+                    Form ↗
+                  </a>
+                )}
+              </div>
+              <div className="mgr-excerpt">{ev.content?.slice(0, 100)}…</div>
+            </div>
+            <div className="mgr-actions">
+              <button className="btn-adm edit" onClick={() => openEdit(ev)}>
+                Edit
+              </button>
+              <button
+                className="btn-adm del"
+                onClick={() => del(ev)}
+                disabled={deleting === ev.id}
+              >
+                {deleting === ev.id ? "…" : "Delete"}
+              </button>
+            </div>
+          </div>
+        ))}
+        {events.length === 0 && (
+          <div className="mgr-empty">No events yet. Create one!</div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+const EMPTY_GAL = {
+  label: "",
+  icon: "fa-image",
+  cat: "",
+  wide: false,
+  sort_order: 0,
+  image_url: "",
+};
+
+function GalleryManager() {
+  const [items, setItems] = useState([]);
+  const [view, setView] = useState("list");
+  const [form, setForm] = useState(EMPTY_GAL);
+  const [imgFile, setImgFile] = useState(null);
+  const [preview, setPreview] = useState(null);
+  const [saving, setSaving] = useState(false);
+  const [deleting, setDeleting] = useState(null);
+  const [msg, setMsg] = useState(null);
+  const fileRef = useRef();
+
+  useEffect(() => {
+    load();
+  }, []);
+  async function load() {
+    const { data } = await supabase
+      .from("gallery_items")
+      .select("*")
+      .order("sort_order");
+    setItems(data ?? []);
+  }
+  function openNew() {
+    setForm(EMPTY_GAL);
+    setImgFile(null);
+    setPreview(null);
+    setView("new");
+  }
+  function openEdit(it) {
+    setForm({
+      label: it.label,
+      icon: it.icon,
+      cat: it.cat,
+      wide: it.wide,
+      sort_order: it.sort_order,
+      image_url: it.image_url ?? "",
+    });
+    setPreview(it.image_url || null);
+    setImgFile(null);
+    setView(it.id);
+  }
+  function f(e) {
+    const val =
+      e.target.type === "checkbox" ? e.target.checked : e.target.value;
+    setForm((p) => ({ ...p, [e.target.name]: val }));
+  }
+
+  async function save() {
+    if (!form.label || !form.cat) {
+      setMsg({ t: "err", m: "Label and category required." });
+      return;
+    }
+    setSaving(true);
+    try {
+      if (view === "new") {
+        const { data: ins, error } = await supabase
+          .from("gallery_items")
+          .insert([{ ...form, image_url: "" }])
+          .select()
+          .single();
+        if (error) throw error;
+        const url = await uploadToBucket(GALLERY_BUCKET, ins.id, imgFile);
+        if (url)
+          await supabase
+            .from("gallery_items")
+            .update({ image_url: url })
+            .eq("id", ins.id);
+      } else {
+        const url = imgFile
+          ? await uploadToBucket(GALLERY_BUCKET, view, imgFile)
+          : form.image_url;
+        const { error } = await supabase
+          .from("gallery_items")
+          .update({ ...form, image_url: url ?? "" })
+          .eq("id", view);
+        if (error) throw error;
+      }
+      setMsg({ t: "ok", m: "Saved!" });
+      await load();
+      setTimeout(() => {
+        setView("list");
+        setMsg(null);
+      }, 1000);
+    } catch (e) {
+      setMsg({ t: "err", m: e.message });
+    }
+    setSaving(false);
+  }
+
+  async function del(it) {
+    if (!confirm(`Delete "${it.label}"?`)) return;
+    setDeleting(it.id);
+    if (it.image_url) {
+      const path = it.image_url.split(`/${GALLERY_BUCKET}/`)[1];
+      if (path) await supabase.storage.from(GALLERY_BUCKET).remove([path]);
+    }
+    await supabase.from("gallery_items").delete().eq("id", it.id);
+    await load();
+    setDeleting(null);
+  }
+
+  if (view !== "list")
+    return (
+      <div className="mgr-form">
+        <button
+          className="mgr-back"
+          onClick={() => {
+            setView("list");
+            setMsg(null);
+          }}
+        >
+          ← Back to Gallery
+        </button>
+        <div className="mgr-form-title">
+          {view === "new" ? "New Gallery Item" : "Edit Gallery Item"}
+        </div>
+        {msg && <div className={`mgr-msg ${msg.t}`}>{msg.m}</div>}
+        <div className="mgr-grid">
+          <div className="mgr-field">
+            <label>Label *</label>
+            <input
+              name="label"
+              value={form.label}
+              onChange={f}
+              placeholder="NEC IIT Bombay"
+            />
+          </div>
+          <div className="mgr-field">
+            <label>Category *</label>
+            <input name="cat" value={form.cat} onChange={f} placeholder="nec" />
+          </div>
+          <div className="mgr-field">
+            <label>Icon (Font Awesome)</label>
+            <input
+              name="icon"
+              value={form.icon}
+              onChange={f}
+              placeholder="fa-image"
+            />
+          </div>
+          <div className="mgr-field">
+            <label>Sort Order</label>
+            <input
+              name="sort_order"
+              type="number"
+              value={form.sort_order}
+              onChange={f}
+            />
+          </div>
+          <div className="mgr-field check">
+            <label>
+              <input
+                name="wide"
+                type="checkbox"
+                checked={form.wide}
+                onChange={f}
+                style={{ marginRight: 6 }}
+              />
+              Wide tile (spans 2 columns)
+            </label>
+          </div>
+          <div className="mgr-field full">
+            <label>Image</label>
+            <div
+              className="mgr-img-drop"
+              onClick={() => fileRef.current.click()}
+            >
+              {preview ? (
+                <img src={preview} className="mgr-img-preview" alt="preview" />
+              ) : (
+                <span className="mgr-img-ph">Click to upload image</span>
+              )}
+            </div>
+            <input
+              ref={fileRef}
+              type="file"
+              accept="image/*"
+              style={{ display: "none" }}
+              onChange={(e) => {
+                const file = e.target.files[0];
+                if (file) {
+                  setImgFile(file);
+                  setPreview(URL.createObjectURL(file));
+                }
+              }}
+            />
+            {preview && (
+              <button
+                className="mgr-clear-img"
+                onClick={() => {
+                  setPreview(null);
+                  setImgFile(null);
+                  setForm((p) => ({ ...p, image_url: "" }));
+                }}
+              >
+                Remove image
+              </button>
+            )}
+          </div>
+        </div>
+        <div className="mgr-form-actions">
+          <button
+            className="btn-adm cancel"
+            onClick={() => {
+              setView("list");
+              setMsg(null);
+            }}
+          >
+            Cancel
+          </button>
+          <button className="btn-adm primary" onClick={save} disabled={saving}>
+            {saving ? "Saving…" : "Save"}
+          </button>
+        </div>
+      </div>
+    );
+
+  return (
+    <div>
+      <div className="mgr-header">
+        <div className="mgr-title">
+          Gallery <span className="mgr-count">{items.length} items</span>
+        </div>
+        <button className="btn-adm primary" onClick={openNew}>
+          + New Item
+        </button>
+      </div>
+      <div className="mgr-list">
+        {items.map((it) => (
+          <div className="mgr-item" key={it.id}>
+            {it.image_url ? (
+              <img
+                src={it.image_url}
+                className="mgr-item-thumb"
+                alt={it.label}
+              />
+            ) : (
+              <div className="mgr-item-thumb-ph">
+                <i className={`fas ${it.icon}`} />
+              </div>
+            )}
+            <div className="mgr-item-body">
+              <div className="mgr-item-name">{it.label}</div>
+              <div className="mgr-item-meta">
+                <span className="mgr-tag">{it.cat}</span>
+                {it.wide && <span className="mgr-tag">Wide</span>}
+              </div>
+            </div>
+            <div className="mgr-actions">
+              <button className="btn-adm edit" onClick={() => openEdit(it)}>
+                Edit
+              </button>
+              <button
+                className="btn-adm del"
+                onClick={() => del(it)}
+                disabled={deleting === it.id}
+              >
+                {deleting === it.id ? "…" : "Delete"}
+              </button>
+            </div>
+          </div>
+        ))}
+        {items.length === 0 && (
+          <div className="mgr-empty">No gallery items yet.</div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+const EMPTY_SP = { initial: "", name: "", role: "", tag: "", sort_order: 0 };
+function SpeakersManager() {
+  const [items, setItems] = useState([]);
+  const [view, setView] = useState("list");
+  const [form, setForm] = useState(EMPTY_SP);
+  const [saving, setSaving] = useState(false);
+  const [deleting, setDeleting] = useState(null);
+  const [msg, setMsg] = useState(null);
+  useEffect(() => {
+    load();
+  }, []);
+  async function load() {
+    const { data } = await supabase
+      .from("speakers")
+      .select("*")
+      .order("sort_order");
+    setItems(data ?? []);
+  }
+  function openNew() {
+    setForm(EMPTY_SP);
+    setView("new");
+  }
+  function openEdit(s) {
+    setForm({
+      initial: s.initial,
+      name: s.name,
+      role: s.role,
+      tag: s.tag,
+      sort_order: s.sort_order,
+    });
+    setView(s.id);
+  }
+  function f(e) {
+    setForm((p) => ({ ...p, [e.target.name]: e.target.value }));
+  }
+  async function save() {
+    if (!form.name || !form.role) {
+      setMsg({ t: "err", m: "Name and role required." });
+      return;
+    }
+    setSaving(true);
+    try {
+      if (view === "new") {
+        const { error } = await supabase.from("speakers").insert([form]);
+        if (error) throw error;
+      } else {
+        const { error } = await supabase
+          .from("speakers")
+          .update(form)
+          .eq("id", view);
+        if (error) throw error;
+      }
+      setMsg({ t: "ok", m: "Saved!" });
+      await load();
+      setTimeout(() => {
+        setView("list");
+        setMsg(null);
+      }, 1000);
+    } catch (e) {
+      setMsg({ t: "err", m: e.message });
+    }
+    setSaving(false);
+  }
+  async function del(s) {
+    if (!confirm(`Delete "${s.name}"?`)) return;
+    setDeleting(s.id);
+    await supabase.from("speakers").delete().eq("id", s.id);
+    await load();
+    setDeleting(null);
+  }
+
+  if (view !== "list")
+    return (
+      <div className="mgr-form">
+        <button
+          className="mgr-back"
+          onClick={() => {
+            setView("list");
+            setMsg(null);
+          }}
+        >
+          ← Back to Speakers
+        </button>
+        <div className="mgr-form-title">
+          {view === "new" ? "New Speaker" : "Edit Speaker"}
+        </div>
+        {msg && <div className={`mgr-msg ${msg.t}`}>{msg.m}</div>}
+        <div className="mgr-grid">
+          <div className="mgr-field">
+            <label>Initial (avatar)</label>
+            <input
+              name="initial"
+              value={form.initial}
+              onChange={f}
+              placeholder="A"
+              maxLength={2}
+            />
+          </div>
+          <div className="mgr-field">
+            <label>Full Name *</label>
+            <input
+              name="name"
+              value={form.name}
+              onChange={f}
+              placeholder="Dr. Jane Smith"
+            />
+          </div>
+          <div className="mgr-field">
+            <label>Role / Title *</label>
+            <input
+              name="role"
+              value={form.role}
+              onChange={f}
+              placeholder="Founder & CEO"
+            />
+          </div>
+          <div className="mgr-field">
+            <label>Event Tag</label>
+            <input
+              name="tag"
+              value={form.tag}
+              onChange={f}
+              placeholder="Ignite Pitch 2.0"
+            />
+          </div>
+          <div className="mgr-field">
+            <label>Sort Order</label>
+            <input
+              name="sort_order"
+              type="number"
+              value={form.sort_order}
+              onChange={f}
+            />
+          </div>
+        </div>
+        <div className="mgr-form-actions">
+          <button
+            className="btn-adm cancel"
+            onClick={() => {
+              setView("list");
+              setMsg(null);
+            }}
+          >
+            Cancel
+          </button>
+          <button className="btn-adm primary" onClick={save} disabled={saving}>
+            {saving ? "Saving…" : "Save"}
+          </button>
+        </div>
+      </div>
+    );
+  return (
+    <div>
+      <div className="mgr-header">
+        <div className="mgr-title">
+          Speakers <span className="mgr-count">{items.length} total</span>
+        </div>
+        <button className="btn-adm primary" onClick={openNew}>
+          + New Speaker
+        </button>
+      </div>
+      <div className="mgr-list">
+        {items.map((s) => (
+          <div className="mgr-item" key={s.id}>
+            <div className="mgr-avatar">{s.initial}</div>
+            <div className="mgr-item-body">
+              <div className="mgr-item-name">{s.name}</div>
+              <div className="mgr-item-meta">
+                <span className="mgr-tag">{s.role}</span>
+                <span className="mgr-date">{s.tag}</span>
+              </div>
+            </div>
+            <div className="mgr-actions">
+              <button className="btn-adm edit" onClick={() => openEdit(s)}>
+                Edit
+              </button>
+              <button
+                className="btn-adm del"
+                onClick={() => del(s)}
+                disabled={deleting === s.id}
+              >
+                {deleting === s.id ? "…" : "Delete"}
+              </button>
+            </div>
+          </div>
+        ))}
+        {items.length === 0 && (
+          <div className="mgr-empty">No speakers yet.</div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+const EMPTY_TM = { quote: "", name: "", info: "", sort_order: 0 };
+function TestimonialsManager() {
+  const [items, setItems] = useState([]);
+  const [view, setView] = useState("list");
+  const [form, setForm] = useState(EMPTY_TM);
+  const [saving, setSaving] = useState(false);
+  const [deleting, setDeleting] = useState(null);
+  const [msg, setMsg] = useState(null);
+  useEffect(() => {
+    load();
+  }, []);
+  async function load() {
+    const { data } = await supabase
+      .from("testimonials")
+      .select("*")
+      .order("sort_order");
+    setItems(data ?? []);
+  }
+  function openNew() {
+    setForm(EMPTY_TM);
+    setView("new");
+  }
+  function openEdit(t) {
+    setForm({
+      quote: t.quote,
+      name: t.name,
+      info: t.info,
+      sort_order: t.sort_order,
+    });
+    setView(t.id);
+  }
+  function f(e) {
+    setForm((p) => ({ ...p, [e.target.name]: e.target.value }));
+  }
+  async function save() {
+    if (!form.quote || !form.name) {
+      setMsg({ t: "err", m: "Quote and name required." });
+      return;
+    }
+    setSaving(true);
+    try {
+      if (view === "new") {
+        const { error } = await supabase.from("testimonials").insert([form]);
+        if (error) throw error;
+      } else {
+        const { error } = await supabase
+          .from("testimonials")
+          .update(form)
+          .eq("id", view);
+        if (error) throw error;
+      }
+      setMsg({ t: "ok", m: "Saved!" });
+      await load();
+      setTimeout(() => {
+        setView("list");
+        setMsg(null);
+      }, 1000);
+    } catch (e) {
+      setMsg({ t: "err", m: e.message });
+    }
+    setSaving(false);
+  }
+  async function del(t) {
+    if (!confirm(`Delete testimonial from "${t.name}"?`)) return;
+    setDeleting(t.id);
+    await supabase.from("testimonials").delete().eq("id", t.id);
+    await load();
+    setDeleting(null);
+  }
+
+  if (view !== "list")
+    return (
+      <div className="mgr-form">
+        <button
+          className="mgr-back"
+          onClick={() => {
+            setView("list");
+            setMsg(null);
+          }}
+        >
+          ← Back to Testimonials
+        </button>
+        <div className="mgr-form-title">
+          {view === "new" ? "New Testimonial" : "Edit Testimonial"}
+        </div>
+        {msg && <div className={`mgr-msg ${msg.t}`}>{msg.m}</div>}
+        <div className="mgr-grid">
+          <div className="mgr-field full">
+            <label>Quote *</label>
+            <textarea
+              name="quote"
+              value={form.quote}
+              onChange={f}
+              rows={4}
+              placeholder="What they said…"
+            />
+          </div>
+          <div className="mgr-field">
+            <label>Name *</label>
+            <input
+              name="name"
+              value={form.name}
+              onChange={f}
+              placeholder="Student Name"
+            />
+          </div>
+          <div className="mgr-field">
+            <label>Info (batch/dept)</label>
+            <input
+              name="info"
+              value={form.info}
+              onChange={f}
+              placeholder="BE Computer Engineering · 2025 Batch"
+            />
+          </div>
+          <div className="mgr-field">
+            <label>Sort Order</label>
+            <input
+              name="sort_order"
+              type="number"
+              value={form.sort_order}
+              onChange={f}
+            />
+          </div>
+        </div>
+        <div className="mgr-form-actions">
+          <button
+            className="btn-adm cancel"
+            onClick={() => {
+              setView("list");
+              setMsg(null);
+            }}
+          >
+            Cancel
+          </button>
+          <button className="btn-adm primary" onClick={save} disabled={saving}>
+            {saving ? "Saving…" : "Save"}
+          </button>
+        </div>
+      </div>
+    );
+  return (
+    <div>
+      <div className="mgr-header">
+        <div className="mgr-title">
+          Testimonials <span className="mgr-count">{items.length} total</span>
+        </div>
+        <button className="btn-adm primary" onClick={openNew}>
+          + New Testimonial
+        </button>
+      </div>
+      <div className="mgr-list">
+        {items.map((t) => (
+          <div className="mgr-item" key={t.id}>
+            <div className="mgr-item-body">
+              <div
+                className="mgr-item-name"
+                style={{ fontStyle: "italic", fontWeight: 400 }}
+              >
+                "{t.quote.slice(0, 90)}…"
+              </div>
+              <div className="mgr-item-meta">
+                <span className="mgr-tag">{t.name}</span>
+                <span className="mgr-date">{t.info}</span>
+              </div>
+            </div>
+            <div className="mgr-actions">
+              <button className="btn-adm edit" onClick={() => openEdit(t)}>
+                Edit
+              </button>
+              <button
+                className="btn-adm del"
+                onClick={() => del(t)}
+                disabled={deleting === t.id}
+              >
+                {deleting === t.id ? "…" : "Delete"}
+              </button>
+            </div>
+          </div>
+        ))}
+        {items.length === 0 && (
+          <div className="mgr-empty">No testimonials yet.</div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+/* ══════════════════════════════════════════════════════════════
+   ADMIN DASHBOARD
+══════════════════════════════════════════════════════════════ */
+function AdminDashboard({ session, userRole, onLogout, onGoToSite }) {
+  const [tab, setTab] = useState("overview");
+  const [events, setEvents] = useState([]);
+  const [stats, setStats] = useState([]);
+  const [loadingOverview, setLoadingOverview] = useState(true);
+
+  useEffect(() => {
+    Promise.all([
+      supabase.from("events").select("*").order("sort_order"),
+      supabase.from("stats").select("*").order("sort_order"),
+    ]).then(([evRes, stRes]) => {
+      setEvents(evRes.data ?? []);
+      setStats(stRes.data ?? []);
+      setLoadingOverview(false);
+    });
+  }, []);
+
+  async function handleLogout() {
+    await supabase.auth.signOut();
+    onLogout();
+  }
+
+  const TABS = [
+    { id: "overview", icon: "fa-th-large", label: "Overview" },
+    { id: "events", icon: "fa-calendar", label: "Events" },
+    { id: "gallery", icon: "fa-images", label: "Gallery" },
+    { id: "speakers", icon: "fa-microphone", label: "Speakers" },
+    { id: "testimonials", icon: "fa-quote-left", label: "Testimonials" },
+  ];
+
+  return (
+    <div className="admin-page">
+      <div className="admin-topbar">
+        <div className="admin-topbar-left">
+          <div className="admin-topbar-logo">
+            E-CELL <span>MESW</span>COE
+          </div>
+          <div className="admin-badge">Admin</div>
+        </div>
+        <div className="admin-topbar-right">
+          <span className="admin-user-email">{session.user.email}</span>
+          <button className="admin-logout-btn" onClick={handleLogout}>
+            <i className="fas fa-sign-out-alt"></i> Sign Out
+          </button>
+        </div>
+      </div>
+
+      <div className="admin-body">
+        <nav className="admin-sidebar">
+          <span className="admin-sidebar-label">Menu</span>
+          {TABS.map((t) => (
+            <button
+              key={t.id}
+              className={`admin-nav-btn${tab === t.id ? " active" : ""}`}
+              onClick={() => setTab(t.id)}
+            >
+              <i className={`fas ${t.icon}`} style={{ width: 16 }}></i>
+              {t.label}
+            </button>
+          ))}
+          <div
+            style={{
+              marginTop: "auto",
+              padding: "16px",
+              borderTop: "1px solid #222",
+            }}
+          >
+            <button
+              className="admin-go-site"
+              onClick={onGoToSite}
+              style={{ width: "100%", justifyContent: "center" }}
+            >
+              <i className="fas fa-external-link-alt"></i> View Site
+            </button>
+          </div>
+        </nav>
+
+        <main className="admin-main-area">
+          {tab === "overview" && (
+            <div className="admin-content">
+              <div className="admin-welcome">
+                <h1>Dashboard</h1>
+                <p>
+                  Welcome back — <strong>{session.user.email}</strong>
+                </p>
+              </div>
+              <div className="admin-stats-row">
+                {loadingOverview
+                  ? [0, 1, 2, 3].map((i) => (
+                      <div className="admin-stat-card" key={i}>
+                        <div
+                          className="skeleton skeleton-block"
+                          style={{ height: 36, width: "50%", marginBottom: 6 }}
+                        />
+                        <div
+                          className="skeleton skeleton-block"
+                          style={{ height: 12, width: "70%" }}
+                        />
+                      </div>
+                    ))
+                  : stats.length > 0
+                    ? stats.map((s, i) => (
+                        <div className="admin-stat-card" key={s.id || i}>
+                          <div className="admin-stat-num">
+                            {s.num}
+                            {s.suffix || ""}
+                          </div>
+                          <div className="admin-stat-label">{s.label}</div>
+                        </div>
+                      ))
+                    : [
+                        ["8", "Total Events"],
+                        ["33", "Team Members"],
+                        ["100+", "Participants"],
+                        ["1", "NEC Finalist"],
+                      ].map(([n, l], i) => (
+                        <div className="admin-stat-card" key={i}>
+                          <div className="admin-stat-num">{n}</div>
+                          <div className="admin-stat-label">{l}</div>
+                        </div>
+                      ))}
+              </div>
+              <div className="admin-card">
+                <div className="admin-card-title">
+                  <span>All Events</span>
+                  <span style={{ color: "var(--red)", fontSize: 11 }}>
+                    {events.length} total
+                  </span>
+                </div>
+                {loadingOverview ? (
+                  <LoadingSkeleton rows={4} />
+                ) : (
+                  events.map((ev, i) => (
+                    <div className="admin-event-row" key={ev.id || i}>
+                      <div className="admin-event-num">
+                        {String(i + 1).padStart(2, "0")}
+                      </div>
+                      <div>
+                        <div className="admin-event-name">{ev.title}</div>
+                        <div className="admin-event-tag">
+                          {ev.date} · {ev.tag}
+                        </div>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+          )}
+          {tab === "events" && <EventsManager />}
+          {tab === "gallery" && <GalleryManager />}
+          {tab === "speakers" && <SpeakersManager />}
+          {tab === "testimonials" && <TestimonialsManager />}
+        </main>
+      </div>
     </div>
   );
 }
@@ -527,8 +1783,10 @@ function LoginPage({ onLoginSuccess, onBack }) {
       );
       if (authError) throw authError;
       if (data.session) {
-        const me = await authFetch("/api/auth/me", data.session);
-        onLoginSuccess(data.session, me.role);
+        const role = await getMyRole();
+        if (!role)
+          throw new Error("Access denied. You do not have an admin role.");
+        onLoginSuccess(data.session, role);
       }
     } catch (err) {
       setError(err.message || "Login failed. Please check your credentials.");
@@ -613,178 +1871,6 @@ function LoginPage({ onLoginSuccess, onBack }) {
   );
 }
 
-/* ─── ADMIN DASHBOARD ─── */
-function AdminDashboard({ session, userRole, onLogout, onGoToSite }) {
-  const [events, setEvents] = useState([]);
-  const [stats, setStats] = useState([]);
-  const [loadingEvents, setLoadingEvents] = useState(true);
-  const [loadingStats, setLoadingStats] = useState(true);
-
-  useEffect(() => {
-    apiFetch("/api/events")
-      .then((data) => setEvents(Array.isArray(data) ? data : []))
-      .catch(() => {})
-      .finally(() => setLoadingEvents(false));
-    apiFetch("/api/stats")
-      .then((data) => setStats(Array.isArray(data) ? data : []))
-      .catch(() => {})
-      .finally(() => setLoadingStats(false));
-  }, []);
-
-  async function handleLogout() {
-    await supabase.auth.signOut();
-    onLogout();
-  }
-
-  return (
-    <div className="admin-page">
-      <div className="admin-topbar">
-        <div className="admin-topbar-left">
-          <div className="admin-topbar-logo">
-            E-CELL <span>MESW</span>COE
-          </div>
-          <div className="admin-badge">Admin</div>
-          {userRole === "superadmin" && (
-            <div className="admin-role-badge">Superadmin</div>
-          )}
-        </div>
-        <div className="admin-topbar-right">
-          <span className="admin-user-email">{session.user.email}</span>
-          <button className="admin-logout-btn" onClick={handleLogout}>
-            <i className="fas fa-sign-out-alt"></i> Sign Out
-          </button>
-        </div>
-      </div>
-      <div className="admin-content">
-        <div className="admin-welcome">
-          <h1>Dashboard</h1>
-          <p>
-            Welcome back — logged in as <strong>{session.user.email}</strong> ·
-            role: <strong>{userRole}</strong>
-          </p>
-        </div>
-        <div className="admin-stats-row">
-          {loadingStats
-            ? [0, 1, 2, 3].map((i) => (
-                <div className="admin-stat-card" key={i}>
-                  <div
-                    className="skeleton skeleton-block"
-                    style={{ height: 40, width: "60%", marginBottom: 8 }}
-                  />
-                  <div
-                    className="skeleton skeleton-block"
-                    style={{ height: 12, width: "80%" }}
-                  />
-                </div>
-              ))
-            : stats.length > 0
-              ? stats.map((s, i) => (
-                  <div className="admin-stat-card" key={s.id || i}>
-                    <div className="admin-stat-num">
-                      {s.num}
-                      {s.suffix || ""}
-                    </div>
-                    <div className="admin-stat-label">{s.label}</div>
-                  </div>
-                ))
-              : [
-                  ["8", "Total Events"],
-                  ["33", "Team Members"],
-                  ["100+", "Participants"],
-                  ["1", "NEC Finalist"],
-                ].map(([num, label], i) => (
-                  <div className="admin-stat-card" key={i}>
-                    <div className="admin-stat-num">{num}</div>
-                    <div className="admin-stat-label">{label}</div>
-                  </div>
-                ))}
-        </div>
-        <div className="admin-sections">
-          <div className="admin-card">
-            <div className="admin-card-title">
-              <span>All Events</span>
-              <span style={{ color: "var(--red)", fontSize: 11 }}>
-                {events.length} total
-              </span>
-            </div>
-            {loadingEvents ? (
-              <LoadingSkeleton rows={5} />
-            ) : (
-              events.map((ev, i) => (
-                <div className="admin-event-row" key={ev.id || i}>
-                  <div className="admin-event-num">
-                    {String(i + 1).padStart(2, "0")}
-                  </div>
-                  <div>
-                    <div className="admin-event-name">{ev.title}</div>
-                    <div className="admin-event-tag">
-                      {ev.date} · {ev.tag}
-                    </div>
-                  </div>
-                </div>
-              ))
-            )}
-          </div>
-          <div>
-            <div className="admin-card" style={{ marginBottom: 24 }}>
-              <div className="admin-card-title">
-                <span>Quick Actions</span>
-              </div>
-              {[
-                ["fa-plus", "Add New Event"],
-                ["fa-users", "Manage Team"],
-                ["fa-images", "Update Gallery"],
-                ["fa-envelope", "View Messages"],
-                ["fa-cog", "Site Settings"],
-              ].map(([icon, label], i) => (
-                <div className="admin-quick-action" key={i}>
-                  <i className={`fas ${icon} aqa-icon`}></i>
-                  <span className="aqa-label">{label}</span>
-                </div>
-              ))}
-            </div>
-            <div className="admin-card">
-              <div className="admin-card-title">
-                <span>Session Info</span>
-              </div>
-              <div
-                style={{
-                  fontSize: 12,
-                  color: "var(--gray-400)",
-                  lineHeight: 1.9,
-                }}
-              >
-                <div>
-                  <strong style={{ color: "var(--black)" }}>User ID</strong>
-                  <br />
-                  {session.user.id.slice(0, 18)}…
-                </div>
-                <div style={{ marginTop: 10 }}>
-                  <strong style={{ color: "var(--black)" }}>
-                    Last Sign In
-                  </strong>
-                  <br />
-                  {new Date(session.user.last_sign_in_at).toLocaleString()}
-                </div>
-                <div style={{ marginTop: 10 }}>
-                  <strong style={{ color: "var(--black)" }}>
-                    Token Expires
-                  </strong>
-                  <br />
-                  {new Date(session.expires_at * 1000).toLocaleString()}
-                </div>
-              </div>
-            </div>
-            <button className="admin-go-site" onClick={onGoToSite}>
-              <i className="fas fa-external-link-alt"></i> View Public Site
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
 /* ─── HOME PAGE ─── */
 function HomePage({ onNav, onJoin }) {
   const [stats, setStats] = useState([]);
@@ -824,7 +1910,6 @@ function HomePage({ onNav, onJoin }) {
 
   return (
     <div>
-      {/* ── HERO WITH TEAM PHOTO ── */}
       <section id="hero">
         <img src={heroPhoto} alt="E-Cell Team" className="hero-bg-img" />
         <div className="hero-overlay" />
@@ -1080,12 +2165,12 @@ function HomePage({ onNav, onJoin }) {
                   ["B", "Speaker Name", "Venture Capitalist", "Illuminate 2.0"],
                   ["C", "Speaker Name", "Serial Entrepreneur", "VentureSphere"],
                   ["D", "Speaker Name", "Product Lead", "Leadership Bootcamp"],
-                ].map(([init, name, role, tag], i) => (
-                  <div className="speaker-card reveal" key={i}>
-                    <div className="speaker-img-placeholder">{init}</div>
-                    <div className="speaker-name">{name}</div>
-                    <div className="speaker-role">{role}</div>
-                    <div className="speaker-tag">{tag}</div>
+                ].map(([i, n, r, t], idx) => (
+                  <div className="speaker-card reveal" key={idx}>
+                    <div className="speaker-img-placeholder">{i}</div>
+                    <div className="speaker-name">{n}</div>
+                    <div className="speaker-role">{r}</div>
+                    <div className="speaker-tag">{t}</div>
                   </div>
                 ))}
         </div>
@@ -1199,7 +2284,6 @@ function AboutPage({ onNav }) {
           </p>
         </div>
       </div>
-
       <div className="origins">
         <div className="origins-year reveal">2023</div>
         <div className="reveal">
@@ -1231,13 +2315,10 @@ function AboutPage({ onNav }) {
           </p>
         </div>
       </div>
-
-      {/* ── ABOUT VIDEO ── */}
       <div className="about-video-wrap">
         <video src={aboutVideo} autoPlay muted loop playsInline />
         <div className="about-video-label">E-Cell MESWCOE · In Action</div>
       </div>
-
       <div className="vision-section">
         <span className="section-label reveal">Our Vision</span>
         <h2 className="section-title reveal">
@@ -1276,7 +2357,6 @@ function AboutPage({ onNav }) {
           ))}
         </div>
       </div>
-
       <div className="about-stats">
         {displayStats.map((s, i) => (
           <div className="astat reveal" key={s.id || i}>
@@ -1288,7 +2368,6 @@ function AboutPage({ onNav }) {
           </div>
         ))}
       </div>
-
       <div className="spotlight">
         <span className="section-label reveal">Highlights</span>
         <h2 className="section-title reveal">In the Spotlight</h2>
@@ -1332,7 +2411,6 @@ function AboutPage({ onNav }) {
           ))}
         </div>
       </div>
-
       <div className="history-section">
         <span className="section-label reveal">Timeline</span>
         <h2 className="section-title reveal">Our History</h2>
@@ -1379,7 +2457,6 @@ function AboutPage({ onNav }) {
           ))}
         </div>
       </div>
-
       <div className="patronage">
         <span className="section-label reveal">Backed By</span>
         <h2 className="section-title reveal">
@@ -1430,7 +2507,6 @@ function EventsPage({ onNav }) {
       .catch((err) => setError(err.message || "Failed to load events"))
       .finally(() => setLoading(false));
   }, []);
-
   useEffect(() => {
     if (!loading) reRunReveal();
   }, [loading]);
@@ -1531,8 +2607,35 @@ function EventsPage({ onNav }) {
                 {events[selectedEvent].title}
               </div>
             </div>
+            {events[selectedEvent].image_url && (
+              <img
+                src={events[selectedEvent].image_url}
+                className="modal-ev-image"
+                alt={events[selectedEvent].title}
+              />
+            )}
             <div className="modal-body-section">
               <p>{events[selectedEvent].content}</p>
+              {events[selectedEvent].registration_deadline && (
+                <div className="modal-reg-date">
+                  <i
+                    className="fas fa-calendar-alt"
+                    style={{ color: "var(--red)", marginRight: 6 }}
+                  ></i>
+                  Registration deadline:{" "}
+                  <strong>{events[selectedEvent].registration_deadline}</strong>
+                </div>
+              )}
+              {events[selectedEvent].form_link && (
+                <a
+                  href={events[selectedEvent].form_link}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="modal-form-link"
+                >
+                  Register Now <i className="fas fa-external-link-alt"></i>
+                </a>
+              )}
             </div>
           </div>
         </div>
@@ -1556,7 +2659,6 @@ function GalleryPage({ onNav }) {
       .catch((err) => setError(err.message || "Failed to load gallery"))
       .finally(() => setLoading(false));
   }, []);
-
   useEffect(() => {
     if (!loading) reRunReveal();
   }, [loading]);
@@ -1626,15 +2728,30 @@ function GalleryPage({ onNav }) {
                 className={`gal-item${item.wide ? " wide" : ""}`}
                 key={item.id || i}
               >
-                <div className="gal-placeholder">
-                  {item.icon && (
-                    <i className={`fas ${item.icon} gal-icon-el`}></i>
-                  )}
-                  <div className="gal-label-el">{item.label}</div>
-                </div>
-                <div className="gal-overlay">
-                  <span>View Photo</span>
-                </div>
+                {item.image_url ? (
+                  <>
+                    <img
+                      src={item.image_url}
+                      className="gal-real-img"
+                      alt={item.label}
+                    />
+                    <div className="gal-overlay">
+                      <span>{item.label}</span>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div className="gal-placeholder">
+                      {item.icon && (
+                        <i className={`fas ${item.icon} gal-icon-el`}></i>
+                      )}
+                      <div className="gal-label-el">{item.label}</div>
+                    </div>
+                    <div className="gal-overlay">
+                      <span>View Photo</span>
+                    </div>
+                  </>
+                )}
               </div>
             ))}
       </div>
@@ -1643,7 +2760,7 @@ function GalleryPage({ onNav }) {
   );
 }
 
-/* ─── CONTACT PAGE (with dynamic team) ─── */
+/* ─── CONTACT PAGE ─── */
 function ContactPage({ onNav }) {
   const [activeYear, setActiveYear] = useState("current");
   const [teamByYear, setTeamByYear] = useState({});
@@ -1651,7 +2768,6 @@ function ContactPage({ onNav }) {
   const [teamError, setTeamError] = useState("");
   useReveal();
 
-  // Year tab config
   const yearTabs = [
     { key: "current", label: "2026–2027 (Current)" },
     { key: "2025-2026", label: "2025–2026" },
@@ -1659,7 +2775,6 @@ function ContactPage({ onNav }) {
   ];
 
   useEffect(() => {
-    // Fetch all team members at once, group by year client-side
     apiFetch("/api/team")
       .then((data) => {
         if (!Array.isArray(data)) return;
@@ -1697,19 +2812,14 @@ function ContactPage({ onNav }) {
           </p>
         </div>
       </div>
-
-      {/* ── DYNAMIC TEAM ── */}
       <div className="team-section">
         <span className="section-label reveal">The People</span>
         <h2 className="section-title reveal">Meet Our Team</h2>
-
         {teamError && (
           <div className="api-error" style={{ marginTop: 20 }}>
-            <i className="fas fa-exclamation-circle"></i> {teamError} — showing
-            cached data if available.
+            <i className="fas fa-exclamation-circle"></i> {teamError}
           </div>
         )}
-
         <div className="year-tabs reveal">
           {yearTabs.map((tab) => (
             <button
@@ -1721,7 +2831,6 @@ function ContactPage({ onNav }) {
             </button>
           ))}
         </div>
-
         <div className="team-grid">
           {loadingTeam ? (
             [0, 1, 2, 3, 4, 5, 6, 7].map((i) => (
@@ -1761,16 +2870,10 @@ function ContactPage({ onNav }) {
                 }}
               ></i>
               No team members found for this year.
-              <br />
-              <span style={{ fontSize: 12, color: "var(--gray-400)" }}>
-                Add members via the admin dashboard or seed the database.
-              </span>
             </div>
           )}
         </div>
       </div>
-
-      {/* ── CONTACT FORM ── */}
       <div className="contact-form-section">
         <div className="contact-grid">
           <div className="reveal">
@@ -1927,17 +3030,18 @@ export default function App() {
     supabase.auth.getSession().then(async ({ data }) => {
       if (data.session) {
         try {
-          const me = await authFetch("/api/auth/me", data.session);
-          setSession(data.session);
-          setUserRole(me.role);
-          setAuthView("dashboard");
+          const role = await getMyRole();
+          if (role) {
+            setSession(data.session);
+            setUserRole(role);
+            setAuthView("dashboard");
+          } else await supabase.auth.signOut();
         } catch {
           await supabase.auth.signOut();
         }
       }
       setAuthLoading(false);
     });
-
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, sess) => {
@@ -1947,7 +3051,6 @@ export default function App() {
         setAuthView(null);
       }
     });
-
     return () => subscription.unsubscribe();
   }, []);
 
@@ -1957,7 +3060,7 @@ export default function App() {
     window.scrollTo(0, 0);
   };
 
-  if (authLoading) {
+  if (authLoading)
     return (
       <>
         <style>{css}</style>
@@ -1987,9 +3090,8 @@ export default function App() {
         </div>
       </>
     );
-  }
 
-  if (authView === "login") {
+  if (authView === "login")
     return (
       <>
         <style>{css}</style>
@@ -2007,9 +3109,8 @@ export default function App() {
         />
       </>
     );
-  }
 
-  if (authView === "dashboard" && session) {
+  if (authView === "dashboard" && session)
     return (
       <>
         <style>{css}</style>
@@ -2032,7 +3133,6 @@ export default function App() {
         />
       </>
     );
-  }
 
   return (
     <>
@@ -2041,7 +3141,6 @@ export default function App() {
         rel="stylesheet"
         href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
       />
-
       <nav>
         <div className="nav-logo" onClick={() => navTo("home")}>
           <div className="nav-logo-mark">E</div>
@@ -2093,7 +3192,6 @@ export default function App() {
           <i className={`fas ${mobileMenuOpen ? "fa-times" : "fa-bars"}`}></i>
         </button>
       </nav>
-
       <div className={`mobile-menu${mobileMenuOpen ? " open" : ""}`}>
         {[
           ["home", "Home"],
@@ -2132,7 +3230,6 @@ export default function App() {
           Join the Movement
         </button>
       </div>
-
       <div style={{ paddingTop: 60 }}>
         {page === "home" && (
           <HomePage onNav={navTo} onJoin={() => setJoinOpen(true)} />
@@ -2142,7 +3239,6 @@ export default function App() {
         {page === "gallery" && <GalleryPage onNav={navTo} />}
         {page === "contact" && <ContactPage onNav={navTo} />}
       </div>
-
       <JoinModal open={joinOpen} onClose={() => setJoinOpen(false)} />
     </>
   );
