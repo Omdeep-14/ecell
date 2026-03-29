@@ -4,16 +4,16 @@
 // ─────────────────────────────────────────────────────────────
 
 import { createContext, useContext, useEffect, useState } from "react";
-import { supabase } from "../supabaseClient"; // Backend dev creates this file
+import { supabase } from "../context/supabaseClient.js"; // Backend dev creates this file
 
 // 1. Create the context
 const AuthContext = createContext(null);
 
 // 2. Provider — wrap your App with this
 export function AuthProvider({ children }) {
-  const [user, setUser]       = useState(null);   // Supabase user object
-  const [session, setSession] = useState(null);   // Supabase session object
-  const [loading, setLoading] = useState(true);   // true while checking auth
+  const [user, setUser] = useState(null); // Supabase user object
+  const [session, setSession] = useState(null); // Supabase session object
+  const [loading, setLoading] = useState(true); // true while checking auth
 
   useEffect(() => {
     // Get current session on mount
@@ -24,13 +24,13 @@ export function AuthProvider({ children }) {
     });
 
     // Listen for auth state changes (login, logout, token refresh)
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (_event, session) => {
-        setSession(session);
-        setUser(session?.user ?? null);
-        setLoading(false);
-      }
-    );
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+      setUser(session?.user ?? null);
+      setLoading(false);
+    });
 
     return () => subscription.unsubscribe();
   }, []);
@@ -38,7 +38,15 @@ export function AuthProvider({ children }) {
   // ── Auth Methods ──────────────────────────────────────────
 
   // Sign up with email + password
-  const signUp = async ({ email, password, firstName, lastName, dept, year, reason }) => {
+  const signUp = async ({
+    email,
+    password,
+    firstName,
+    lastName,
+    dept,
+    year,
+    reason,
+  }) => {
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
@@ -66,13 +74,13 @@ export function AuthProvider({ children }) {
 
   // ── Value exposed to all components ──────────────────────
   const value = {
-    user,         // null if not logged in, Supabase User object if logged in
-    session,      // full Supabase session (has access_token, refresh_token, etc.)
-    loading,      // use this to show a spinner while auth is being checked
+    user, // null if not logged in, Supabase User object if logged in
+    session, // full Supabase session (has access_token, refresh_token, etc.)
+    loading, // use this to show a spinner while auth is being checked
     signUp,
     signIn,
     signOut,
-    isLoggedIn: !!user,   // simple boolean helper
+    isLoggedIn: !!user, // simple boolean helper
   };
 
   return (
