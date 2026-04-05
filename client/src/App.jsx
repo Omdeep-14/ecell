@@ -3500,65 +3500,65 @@ function ContactPage({ onNav }) {
 }
 
 /* ─── JOIN MODAL ─── */
-function JoinModal({ open, onClose }) {
-  if (!open) return null;
-  return (
-    <div
-      className="join-overlay open"
-      onClick={(e) => e.target === e.currentTarget && onClose()}
-    >
-      <div className="join-box">
-        <button className="join-close" onClick={onClose}>
-          ✕
-        </button>
-        <div className="join-title">
-          Join the
-          <br />
-          <span style={{ color: "var(--red)" }}>Movement.</span>
-        </div>
-        <p className="join-sub">
-          Become part of Pune's most ambitious student entrepreneurship
-          community.
-        </p>
-        <div className="form-row">
-          <div className="form-group">
-            <label>First Name</label>
-            <input type="text" placeholder="First name" />
-          </div>
-          <div className="form-group">
-            <label>Last Name</label>
-            <input type="text" placeholder="Last name" />
-          </div>
-        </div>
-        <div className="form-group">
-          <label>Email</label>
-          <input type="email" placeholder="you@email.com" />
-        </div>
-        <div className="form-group">
-          <label>Year of Study</label>
-          <select>
-            <option>First Year (FE)</option>
-            <option>Second Year (SE)</option>
-            <option>Third Year (TE)</option>
-            <option>Final Year (BE)</option>
-          </select>
-        </div>
-        <div className="form-group">
-          <label>Department</label>
-          <input type="text" placeholder="e.g. Computer Engineering" />
-        </div>
-        <div className="form-group">
-          <label>Why do you want to join?</label>
-          <textarea rows="3" placeholder="Tell us briefly..."></textarea>
-        </div>
-        <button className="btn-send">
-          Submit Application{" "}
-          <i className="fas fa-arrow-right" style={{ marginLeft: 8 }}></i>
-        </button>
-      </div>
-    </div>
-  );
-}
+// function JoinModal({ open, onClose }) {
+//   if (!open) return null;
+//   return (
+//     <div
+//       className="join-overlay open"
+//       onClick={(e) => e.target === e.currentTarget && onClose()}
+//     >
+//       <div className="join-box">
+//         <button className="join-close" onClick={onClose}>
+//           ✕
+//         </button>
+//         <div className="join-title">
+//           Join the
+//           <br />
+//           <span style={{ color: "var(--red)" }}>Movement.</span>
+//         </div>
+//         <p className="join-sub">
+//           Become part of Pune's most ambitious student entrepreneurship
+//           community.
+//         </p>
+//         <div className="form-row">
+//           <div className="form-group">
+//             <label>First Name</label>
+//             <input type="text" placeholder="First name" />
+//           </div>
+//           <div className="form-group">
+//             <label>Last Name</label>
+//             <input type="text" placeholder="Last name" />
+//           </div>
+//         </div>
+//         <div className="form-group">
+//           <label>Email</label>
+//           <input type="email" placeholder="you@email.com" />
+//         </div>
+//         <div className="form-group">
+//           <label>Year of Study</label>
+//           <select>
+//             <option>First Year (FE)</option>
+//             <option>Second Year (SE)</option>
+//             <option>Third Year (TE)</option>
+//             <option>Final Year (BE)</option>
+//           </select>
+//         </div>
+//         <div className="form-group">
+//           <label>Department</label>
+//           <input type="text" placeholder="e.g. Computer Engineering" />
+//         </div>
+//         <div className="form-group">
+//           <label>Why do you want to join?</label>
+//           <textarea rows="3" placeholder="Tell us briefly..."></textarea>
+//         </div>
+//         <button className="btn-send">
+//           Submit Application{" "}
+//           <i className="fas fa-arrow-right" style={{ marginLeft: 8 }}></i>
+//         </button>
+//       </div>
+//     </div>
+//   );
+// }
 
 /* ─── APP ─── */
 export default function App() {
@@ -3719,14 +3719,6 @@ export default function App() {
               <i className="fas fa-lock"></i> Admin
             </button>
           </li>
-          <li>
-            <button
-              className="nav-cta-desktop"
-              onClick={() => setJoinOpen(true)}
-            >
-              Join the Movement
-            </button>
-          </li>
         </ul>
         <button
           className="nav-hamburger"
@@ -3783,7 +3775,7 @@ export default function App() {
         {page === "gallery" && <GalleryPage onNav={navTo} />}
         {page === "contact" && <ContactPage onNav={navTo} />}
       </div>
-      <JoinModal open={joinOpen} onClose={() => setJoinOpen(false)} />
+      {/* <JoinModal open={joinOpen} onClose={() => setJoinOpen(false)} /> */}
     </>
   );
 }
