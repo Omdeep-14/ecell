@@ -1268,6 +1268,207 @@ function GalleryManager() {
   );
 }
 
+function MessagesManager() {
+  const [messages, setMessages] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [expanded, setExpanded] = useState(null);
+
+  useEffect(() => {
+    supabase
+      .from("contact_messages")
+      .select("*")
+      .order("created_at", { ascending: false })
+      .then(({ data, error }) => {
+        if (error) setError(error.message);
+        else setMessages(data ?? []);
+        setLoading(false);
+      });
+  }, []);
+
+  const markRead = async (id) => {
+    await supabase.from("contact_messages").update({ read: true }).eq("id", id);
+    setMessages((prev) =>
+      prev.map((m) => (m.id === id ? { ...m, read: true } : m)),
+    );
+  };
+
+  const deleteMsg = async (id) => {
+    if (!confirm("Delete this message?")) return;
+    await supabase.from("contact_messages").delete().eq("id", id);
+    setMessages((prev) => prev.filter((m) => m.id !== id));
+    if (expanded === id) setExpanded(null);
+  };
+
+  const unreadCount = messages.filter((m) => !m.read).length;
+
+  if (loading) return <LoadingSkeleton rows={5} />;
+
+  return (
+    <div className="admin-content">
+      <div className="mgr-header">
+        <div className="mgr-title">
+          Messages
+          <span className="mgr-count">{messages.length} total</span>
+          {unreadCount > 0 && (
+            <span
+              style={{
+                background: "var(--red)",
+                color: "white",
+                fontSize: 10,
+                padding: "2px 8px",
+                fontFamily: "var(--sans)",
+                fontWeight: 600,
+                letterSpacing: 1,
+              }}
+            >
+              {unreadCount} unread
+            </span>
+          )}
+        </div>
+      </div>
+
+      {error && (
+        <div className="api-error">
+          <i className="fas fa-exclamation-circle"></i> {error}
+        </div>
+      )}
+
+      {messages.length === 0 ? (
+        <div className="mgr-empty">No messages yet.</div>
+      ) : (
+        <div className="mgr-list">
+          {messages.map((m) => {
+            const replyHref =
+              "mailto:" +
+              m.email +
+              "?subject=" +
+              encodeURIComponent("Re: " + m.subject);
+
+            return (
+              <div
+                key={m.id}
+                className="mgr-item"
+                style={{
+                  flexDirection: "column",
+                  alignItems: "stretch",
+                  gap: 0,
+                  borderLeft: m.read
+                    ? "1px solid var(--gray-200)"
+                    : "3px solid var(--red)",
+                  cursor: "pointer",
+                }}
+                onClick={() => {
+                  setExpanded(expanded === m.id ? null : m.id);
+                  if (!m.read) markRead(m.id);
+                }}
+              >
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 14,
+                    padding: "14px 16px",
+                  }}
+                >
+                  <div className="mgr-avatar" style={{ fontSize: 13 }}>
+                    {m.first_name?.[0]}
+                    {m.last_name?.[0]}
+                  </div>
+
+                  <div className="mgr-item-body">
+                    <div
+                      className="mgr-item-name"
+                      style={{ display: "flex", alignItems: "center", gap: 8 }}
+                    >
+                      {m.first_name} {m.last_name}
+                      {!m.read && (
+                        <span className="mgr-tag mgr-tag-red">New</span>
+                      )}
+                    </div>
+                    <div className="mgr-item-meta">
+                      <span className="mgr-tag">{m.subject}</span>
+                      <span className="mgr-date">{m.email}</span>
+                      <span className="mgr-date">
+                        {new Date(m.created_at).toLocaleDateString("en-IN", {
+                          day: "numeric",
+                          month: "short",
+                          year: "numeric",
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div
+                    className="mgr-actions"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <button
+                      className="btn-adm del"
+                      onClick={() => deleteMsg(m.id)}
+                      title="Delete"
+                    >
+                      <i className="fas fa-trash"></i>
+                    </button>
+                  </div>
+
+                  <i
+                    className={
+                      "fas fa-chevron-" + (expanded === m.id ? "up" : "down")
+                    }
+                    style={{
+                      color: "var(--gray-400)",
+                      fontSize: 11,
+                      flexShrink: 0,
+                    }}
+                  />
+                </div>
+
+                {expanded === m.id && (
+                  <div
+                    style={{
+                      padding: "0 16px 16px 64px",
+                      borderTop: "1px solid var(--gray-100)",
+                      fontFamily: "var(--sans)",
+                      fontSize: 14,
+                      color: "var(--gray-600)",
+                      lineHeight: 1.8,
+                      whiteSpace: "pre-wrap",
+                    }}
+                  >
+                    <div style={{ paddingTop: 12 }}>{m.message}</div>
+
+                    <a
+                      href={replyHref}
+                      style={{
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: 6,
+                        marginTop: 12,
+                        fontSize: 11,
+                        fontWeight: 600,
+                        letterSpacing: 1,
+                        textTransform: "uppercase",
+                        color: "var(--red)",
+                        textDecoration: "none",
+                      }}
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <i className="fas fa-reply"></i> Reply via Email
+                    </a>
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+
 const EMPTY_SP = { initial: "", name: "", role: "", tag: "", sort_order: 0 };
 function SpeakersManager() {
   const [items, setItems] = useState([]);
@@ -1652,7 +1853,9 @@ function TestimonialsManager() {
 
 /* ══════════════════════════════════════════════════════════════
    ADMIN DASHBOARD
+
 ══════════════════════════════════════════════════════════════ */
+
 function AdminDashboard({ session, userRole, onLogout, onGoToSite }) {
   const [tab, setTab] = useState("overview");
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -1681,6 +1884,7 @@ function AdminDashboard({ session, userRole, onLogout, onGoToSite }) {
     { id: "events", icon: "fa-calendar", label: "Events" },
     { id: "gallery", icon: "fa-images", label: "Gallery" },
     { id: "testimonials", icon: "fa-quote-left", label: "Testimonials" },
+    { id: "messages", icon: "fa-envelope", label: "Messages" },
   ];
 
   return (
@@ -1819,6 +2023,7 @@ function AdminDashboard({ session, userRole, onLogout, onGoToSite }) {
           {tab === "events" && <EventsManager />}
           {tab === "gallery" && <GalleryManager />}
           {tab === "testimonials" && <TestimonialsManager />}
+          {tab === "messages" && <MessagesManager />}
         </main>
       </div>
     </div>
@@ -2951,6 +3156,18 @@ function ContactPage({ onNav }) {
   const [teamByYear, setTeamByYear] = useState({});
   const [loadingTeam, setLoadingTeam] = useState(true);
   const [teamError, setTeamError] = useState("");
+
+  const [form, setForm] = useState({
+    first_name: "",
+    last_name: "",
+    email: "",
+    subject: "General Enquiry",
+    message: "",
+  });
+  const [formError, setFormError] = useState("");
+  const [formSuccess, setFormSuccess] = useState("");
+  const [formLoading, setFormLoading] = useState(false);
+
   useReveal();
 
   const yearTabs = [
@@ -2984,6 +3201,75 @@ function ContactPage({ onNav }) {
 
   const currentMembers = teamByYear[activeYear] || [];
 
+  // ── sanitize: strip HTML tags and trim
+  const sanitize = (str) => str.replace(/<[^>]*>/g, "").trim();
+
+  const VALID_SUBJECTS = [
+    "General Enquiry",
+    "Collaboration / Sponsorship",
+    "Joining E-Cell",
+    "Event Query",
+    "Other",
+  ];
+
+  const validate = ({ first_name, last_name, email, subject, message }) => {
+    if (!first_name) return "First name is required.";
+    if (!last_name) return "Last name is required.";
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))
+      return "Enter a valid email address.";
+    if (!VALID_SUBJECTS.includes(subject)) return "Invalid subject selected.";
+    if (message.length < 10) return "Message must be at least 10 characters.";
+    if (message.length > 500) return "Message must be under 500 characters.";
+    return null;
+  };
+
+  const handleChange = (e) => {
+    setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+    setFormError("");
+    setFormSuccess("");
+  };
+
+  const handleSubmit = async () => {
+    setFormError("");
+    setFormSuccess("");
+
+    const cleaned = {
+      first_name: sanitize(form.first_name).slice(0, 100),
+      last_name: sanitize(form.last_name).slice(0, 100),
+      email: sanitize(form.email).toLowerCase().slice(0, 254),
+      subject: sanitize(form.subject),
+      message: sanitize(form.message).slice(0, 500),
+    };
+
+    const err = validate(cleaned);
+    if (err) {
+      setFormError(err);
+      return;
+    }
+
+    setFormLoading(true);
+    try {
+      const { error } = await supabase
+        .from("contact_messages")
+        .insert([cleaned]);
+
+      if (error) throw new Error(error.message);
+
+      setFormSuccess("Message sent! We'll get back to you soon.");
+      setForm({
+        first_name: "",
+        last_name: "",
+        email: "",
+        subject: "General Enquiry",
+        message: "",
+      });
+    } catch (e) {
+      setFormError(e.message || "Something went wrong. Please try again.");
+    } finally {
+      setFormLoading(false);
+    }
+  };
+
   return (
     <div>
       <div className="page-hero">
@@ -3000,6 +3286,7 @@ function ContactPage({ onNav }) {
           </p>
         </div>
       </div>
+
       <div className="team-section">
         <span className="section-label reveal">The People</span>
         <h2 className="section-title reveal">Meet Our Team</h2>
@@ -3062,6 +3349,7 @@ function ContactPage({ onNav }) {
           )}
         </div>
       </div>
+
       <div className="contact-form-section">
         <div className="contact-grid">
           <div className="reveal">
@@ -3099,41 +3387,109 @@ function ContactPage({ onNav }) {
               <i className="fab fa-linkedin-in"></i> E-Cell MESWCOE
             </div>
           </div>
+
           <div className="form-box reveal">
+            {formError && (
+              <div className="api-error" style={{ marginBottom: 16 }}>
+                <i className="fas fa-exclamation-circle"></i> {formError}
+              </div>
+            )}
+            {formSuccess && (
+              <div
+                style={{
+                  padding: "12px 16px",
+                  background: "#f0fdf4",
+                  borderLeft: "3px solid #86efac",
+                  color: "#15803d",
+                  fontSize: 13,
+                  marginBottom: 16,
+                  fontFamily: "var(--sans)",
+                }}
+              >
+                <i
+                  className="fas fa-check-circle"
+                  style={{ marginRight: 8 }}
+                ></i>
+                {formSuccess}
+              </div>
+            )}
             <div className="form-row">
               <div className="form-group">
                 <label>First Name</label>
-                <input type="text" placeholder="Rahul" />
+                <input
+                  name="first_name"
+                  type="text"
+                  placeholder="Rahul"
+                  value={form.first_name}
+                  onChange={handleChange}
+                  maxLength={100}
+                />
               </div>
               <div className="form-group">
                 <label>Last Name</label>
-                <input type="text" placeholder="Sharma" />
+                <input
+                  name="last_name"
+                  type="text"
+                  placeholder="Sharma"
+                  value={form.last_name}
+                  onChange={handleChange}
+                  maxLength={100}
+                />
               </div>
             </div>
             <div className="form-group">
               <label>Email Address</label>
-              <input type="email" placeholder="you@email.com" />
+              <input
+                name="email"
+                type="email"
+                placeholder="you@email.com"
+                value={form.email}
+                onChange={handleChange}
+                maxLength={254}
+              />
             </div>
             <div className="form-group">
               <label>Subject</label>
-              <select>
-                <option>General Enquiry</option>
-                <option>Collaboration / Sponsorship</option>
-                <option>Joining E-Cell</option>
-                <option>Event Query</option>
-                <option>Other</option>
+              <select
+                name="subject"
+                value={form.subject}
+                onChange={handleChange}
+              >
+                {VALID_SUBJECTS.map((s) => (
+                  <option key={s}>{s}</option>
+                ))}
               </select>
             </div>
             <div className="form-group">
               <label>Message</label>
               <textarea
+                name="message"
                 rows="5"
                 placeholder="Tell us what's on your mind..."
-              ></textarea>
+                value={form.message}
+                onChange={handleChange}
+                maxLength={500}
+              />
+              <div
+                style={{
+                  fontSize: 11,
+                  color: "var(--gray-400)",
+                  marginTop: 4,
+                  textAlign: "right",
+                }}
+              >
+                {form.message.length}/500
+              </div>
             </div>
-            <button className="btn-send">
-              Send Message{" "}
-              <i className="fas fa-paper-plane" style={{ marginLeft: 8 }}></i>
+            <button
+              className="btn-send"
+              onClick={handleSubmit}
+              disabled={formLoading}
+            >
+              {formLoading ? "Sending..." : "Send Message"}{" "}
+              {!formLoading && (
+                <i className="fas fa-paper-plane" style={{ marginLeft: 8 }}></i>
+              )}
             </button>
           </div>
         </div>

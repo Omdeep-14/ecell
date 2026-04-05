@@ -15,6 +15,7 @@ import {
   speakersRouter,
   testimonialsRouter,
 } from "./src/routes/content.js";
+import contactRouter from "./src/routes/contact.js";
 
 const app = express();
 const PORT = process.env.PORT || 4000;
@@ -50,6 +51,7 @@ app.use("/api/speakers", speakersRouter);
 app.use("/api/testimonials", testimonialsRouter);
 app.use("/api/admins", adminsRouter); // superadmin only
 app.use("/api/team", teamRouter);
+app.use("/api/contact", contactRouter);
 
 // ── 404 handler ───────────────────────────────────────────────
 app.use((_req, res) => res.status(404).json({ error: "Route not found." }));
