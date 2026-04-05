@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import heroPhoto from "./assets/hero-photo.jpg";
+import ecellLogo from "./assets/ecell-logo.png";
 import aboutVideo from "./assets/about-video.mp4";
 import galEntrepreneurs from "./assets/Gallery/Entrepreneurs .png";
 import galIgnitePitch from "./assets/Gallery/Ignite Pitch .png";
@@ -98,11 +99,11 @@ nav{
   background:rgba(255,255,255,0.96);
   backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
   border-bottom:1px solid #e8e8e8;
-  padding:0 var(--px);height:64px;
+  padding:0 var(--px);height:72px;
   display:flex;align-items:center;justify-content:space-between;
 }
 .nav-logo{display:flex;align-items:center;gap:12px;text-decoration:none;color:var(--black);cursor:pointer;}
-.nav-logo-mark{width:36px;height:36px;background:var(--red);color:white;font-family:var(--serif);font-size:22px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.nav-logo-mark{display:none;}
 .nav-logo-text{font-family:var(--serif);font-size:17px;font-weight:700;letter-spacing:.3px;line-height:1.2;}
 .nav-logo-sub{font-family:var(--sans);font-size:9px;color:var(--gray-400);font-weight:400;letter-spacing:2.5px;text-transform:uppercase;}
 .nav-desktop{display:none;}
@@ -121,7 +122,7 @@ nav{
 }
 .nav-hamburger{background:none;border:1px solid var(--gray-200);padding:8px 10px;cursor:pointer;font-size:16px;color:var(--black);display:flex;align-items:center;justify-content:center;}
 @media(min-width:900px){.nav-hamburger{display:none;}}
-.mobile-menu{position:fixed;top:64px;left:0;right:0;background:white;border-bottom:1px solid var(--gray-200);z-index:999;transform:translateY(-110%);transition:transform .3s ease;box-shadow:0 12px 32px rgba(0,0,0,.1);}
+.mobile-menu{position:fixed;top:72px;left:0;right:0;background:white;border-bottom:1px solid var(--gray-200);z-index:999;transform:translateY(-110%);transition:transform .3s ease;box-shadow:0 12px 32px rgba(0,0,0,.1);}
 .mobile-menu.open{transform:translateY(0);}
 .mobile-menu a,.mobile-menu button.mobile-nav-link{display:block;padding:16px var(--px);font-size:15px;font-weight:500;color:var(--black);text-decoration:none;cursor:pointer;border-bottom:1px solid var(--gray-100);background:none;border-left:none;border-right:none;border-top:none;text-align:left;font-family:var(--sans);width:100%;}
 .mobile-menu a:hover,.mobile-menu button.mobile-nav-link:hover{background:var(--gray-100);}
@@ -2070,14 +2071,21 @@ function Footer({ onNav }) {
       <div className="footer-bottom">
         <span>© 2026 E-Cell MESWCOE. All rights reserved.</span>
         <div className="social-links">
-          <a href="#" className="soc-link">
+          <a
+            href="https://www.instagram.com/meswcoe_e_cell/"
+            target="_blank"
+            rel="noreferrer"
+            className="soc-link"
+          >
             <i className="fab fa-instagram"></i>
           </a>
-          <a href="#" className="soc-link">
+          <a
+            href="https://www.linkedin.com/company/meswcoe-e-cell/"
+            target="_blank"
+            rel="noreferrer"
+            className="soc-link"
+          >
             <i className="fab fa-linkedin-in"></i>
-          </a>
-          <a href="#" className="soc-link">
-            <i className="fab fa-twitter"></i>
           </a>
         </div>
       </div>
@@ -3380,12 +3388,24 @@ function ContactPage({ onNav }) {
               <i className="fas fa-map-marker-alt"></i> MES Wadia College of
               Engineering, Pune
             </div>
-            <div className="contact-detail">
-              <i className="fab fa-instagram"></i> @ecell.meswcoe
-            </div>
-            <div className="contact-detail">
+            <a
+              className="contact-detail"
+              href="https://www.instagram.com/meswcoe_e_cell/"
+              target="_blank"
+              rel="noreferrer"
+              style={{ textDecoration: "none", color: "inherit" }}
+            >
+              <i className="fab fa-instagram"></i> @meswcoe_e_cell
+            </a>
+            <a
+              className="contact-detail"
+              href="https://www.linkedin.com/company/meswcoe-e-cell/"
+              target="_blank"
+              rel="noreferrer"
+              style={{ textDecoration: "none", color: "inherit" }}
+            >
               <i className="fab fa-linkedin-in"></i> E-Cell MESWCOE
-            </div>
+            </a>
           </div>
 
           <div className="form-box reveal">
@@ -3687,7 +3707,16 @@ export default function App() {
       />
       <nav>
         <div className="nav-logo" onClick={() => navTo("home")}>
-          <div className="nav-logo-mark">E</div>
+          <img
+            src={ecellLogo}
+            alt="E-Cell MESWCOE"
+            style={{
+              height: "52px",
+              width: "52px",
+              objectFit: "contain",
+              borderRadius: "50%",
+            }}
+          />
           <div>
             <div className="nav-logo-text">E-CELL</div>
             <div className="nav-logo-sub">MESWCOE</div>
