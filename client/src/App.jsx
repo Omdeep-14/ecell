@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import heroPhoto from "./assets/hero-photo.jpg";
-import ecellLogo from "./assets/ecell-logo.png";
 import aboutVideo from "./assets/about-video.mp4";
 import galEntrepreneurs from "./assets/Gallery/Entrepreneurs .png";
 import galIgnitePitch from "./assets/Gallery/Ignite Pitch .png";
@@ -30,6 +29,7 @@ const supabase = createClient(
 
 const EVENT_BUCKET = "event-images";
 const GALLERY_BUCKET = "gallery-images";
+const TEAM_BUCKET = "team-photos";
 
 const SPONSOR_LOGOS = [
   { file: "7eleven.png", name: "7-Eleven" },
@@ -99,11 +99,11 @@ nav{
   background:rgba(255,255,255,0.96);
   backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
   border-bottom:1px solid #e8e8e8;
-  padding:0 var(--px);height:72px;
+  padding:0 var(--px);height:64px;
   display:flex;align-items:center;justify-content:space-between;
 }
 .nav-logo{display:flex;align-items:center;gap:12px;text-decoration:none;color:var(--black);cursor:pointer;}
-.nav-logo-mark{display:none;}
+.nav-logo-mark{width:36px;height:36px;background:var(--red);color:white;font-family:var(--serif);font-size:22px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
 .nav-logo-text{font-family:var(--serif);font-size:17px;font-weight:700;letter-spacing:.3px;line-height:1.2;}
 .nav-logo-sub{font-family:var(--sans);font-size:9px;color:var(--gray-400);font-weight:400;letter-spacing:2.5px;text-transform:uppercase;}
 .nav-desktop{display:none;}
@@ -122,7 +122,7 @@ nav{
 }
 .nav-hamburger{background:none;border:1px solid var(--gray-200);padding:8px 10px;cursor:pointer;font-size:16px;color:var(--black);display:flex;align-items:center;justify-content:center;}
 @media(min-width:900px){.nav-hamburger{display:none;}}
-.mobile-menu{position:fixed;top:72px;left:0;right:0;background:white;border-bottom:1px solid var(--gray-200);z-index:999;transform:translateY(-110%);transition:transform .3s ease;box-shadow:0 12px 32px rgba(0,0,0,.1);}
+.mobile-menu{position:fixed;top:64px;left:0;right:0;background:white;border-bottom:1px solid var(--gray-200);z-index:999;transform:translateY(-110%);transition:transform .3s ease;box-shadow:0 12px 32px rgba(0,0,0,.1);}
 .mobile-menu.open{transform:translateY(0);}
 .mobile-menu a,.mobile-menu button.mobile-nav-link{display:block;padding:16px var(--px);font-size:15px;font-weight:500;color:var(--black);text-decoration:none;cursor:pointer;border-bottom:1px solid var(--gray-100);background:none;border-left:none;border-right:none;border-top:none;text-align:left;font-family:var(--sans);width:100%;}
 .mobile-menu a:hover,.mobile-menu button.mobile-nav-link:hover{background:var(--gray-100);}
@@ -259,15 +259,12 @@ nav{
   background: var(--black);
   line-height: 0;
   position: relative;
-  /* remove overflow: hidden and max-height entirely */
 }
-
 .about-video-wrap video {
   width: 100%;
   height: auto;
   display: block;
   opacity: .8;
-  /* remove object-fit: cover and max-height */
 }
 .about-video-label{position:absolute;bottom:24px;left:var(--px);font-family:var(--sans);font-size:10px;letter-spacing:3px;text-transform:uppercase;color:rgba(255,255,255,.35);font-weight:600;}
 
@@ -296,8 +293,7 @@ nav{
 /* ABOUT STATS */
 .about-stats{background:#0a0a0a;display:grid;grid-template-columns:repeat(2,1fr);}
 @media(min-width:640px){.about-stats{grid-template-columns:repeat(4,1fr);}}
-.astat{padding:52px 20px;text-align:center;border-right:1px solid rgba(255,255,255,.06);position:relative;opacity: 1 !important;
-  transform: none !important;}
+.astat{padding:52px 20px;text-align:center;border-right:1px solid rgba(255,255,255,.06);position:relative;opacity: 1 !important;transform: none !important;}
 .astat::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:transparent;transition:background .3s;}
 .astat:hover::before{background:var(--red);}
 .astat:nth-child(2n){border-right:none;}
@@ -397,8 +393,48 @@ nav{
 @media(min-width:900px){.team-grid{grid-template-columns:repeat(4,1fr);}}
 .team-card{background:#fff;padding:36px 16px 28px;text-align:center;overflow:hidden;transition:background .3s;}
 .team-card:hover{background:var(--gray-100);}
-.team-photo{border:1.5px solid #0a0a0a;background:transparent;color:#0a0a0a;font-family:var(--serif);font-size:22px;font-weight:700;border-radius:50%;width:64px;height:64px;display:flex;align-items:center;justify-content:center;margin:0 auto 18px;transition:border-color .3s,background .3s,color .3s;}
-.team-card:hover .team-photo{background:#0a0a0a;color:white;}
+
+/* Team photo — supports both image and initials */
+.team-photo{
+  border:1.5px solid #0a0a0a;
+  background:transparent;
+  color:#0a0a0a;
+  font-family:var(--serif);
+  font-size:22px;
+  font-weight:700;
+  border-radius:50%;
+  width:72px;
+  height:72px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  margin:0 auto 18px;
+  transition:border-color .3s,background .3s,color .3s;
+  overflow:hidden;
+  flex-shrink:0;
+  position:relative;
+}
+.team-card:hover .team-photo{background:#0a0a0a;color:white;border-color:#0a0a0a;}
+.team-photo img{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  border-radius:50%;
+  display:block;
+  position:absolute;
+  inset:0;
+}
+.team-photo-initials{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  width:100%;
+  height:100%;
+  font-family:var(--serif);
+  font-size:22px;
+  font-weight:700;
+}
+
 .team-name{font-family:var(--serif);font-size:16px;font-weight:700;color:#0a0a0a;padding:0 12px;margin-bottom:6px;line-height:1.2;}
 .team-role{font-family:var(--sans);font-size:10px;color:var(--red);letter-spacing:1.5px;text-transform:uppercase;padding:0 12px;font-weight:600;}
 .team-dept{font-family:var(--sans);font-size:11px;color:var(--gray-400);margin-top:5px;padding:0 12px;}
@@ -527,7 +563,8 @@ footer{background:#0a0a0a;color:white;padding:80px var(--px) 40px;}
 .mgr-item:hover{border-color:#bbb;}
 .mgr-item-thumb{width:72px;height:54px;object-fit:cover;flex-shrink:0;border:1px solid var(--gray-200);}
 .mgr-item-thumb-ph{width:72px;height:54px;background:var(--gray-100);display:flex;align-items:center;justify-content:center;font-size:18px;color:var(--gray-400);flex-shrink:0;}
-.mgr-avatar{width:38px;height:38px;border-radius:50%;background:var(--red);display:flex;align-items:center;justify-content:center;font-family:var(--serif);font-size:16px;font-weight:700;color:white;flex-shrink:0;}
+.mgr-avatar{width:38px;height:38px;border-radius:50%;background:var(--red);display:flex;align-items:center;justify-content:center;font-family:var(--serif);font-size:16px;font-weight:700;color:white;flex-shrink:0;overflow:hidden;}
+.mgr-avatar img{width:100%;height:100%;object-fit:cover;border-radius:50%;}
 .mgr-item-body{flex:1;min-width:0;}
 .mgr-item-name{font-family:var(--sans);font-size:14px;font-weight:600;margin-bottom:4px;}
 .mgr-item-meta{display:flex;flex-wrap:wrap;gap:6px;align-items:center;}
@@ -587,6 +624,27 @@ footer{background:#0a0a0a;color:white;padding:80px var(--px) 40px;}
 .admin-go-site{display:inline-flex;align-items:center;gap:8px;font-family:var(--sans);font-size:12px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--gray-600);border:1px solid var(--gray-200);padding:10px 18px;cursor:pointer;background:#fff;transition:all .2s;}
 .admin-go-site:hover{background:#0a0a0a;color:white;border-color:#0a0a0a;}
 
+/* Team photo avatar — circular preview in admin */
+.mgr-photo-preview{
+  width:72px;height:72px;border-radius:50%;
+  object-fit:cover;border:2px solid var(--gray-200);
+  display:block;
+}
+.mgr-photo-drop{
+  border:1px dashed var(--gray-200);background:var(--gray-100);
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;transition:border-color .15s;
+  width:110px;height:110px;border-radius:50%;overflow:hidden;
+  position:relative;
+}
+.mgr-photo-drop:hover{border-color:var(--red);}
+.mgr-photo-drop-label{
+  position:absolute;bottom:0;left:0;right:0;
+  background:rgba(0,0,0,.55);
+  font-family:var(--sans);font-size:9px;letter-spacing:1px;
+  text-transform:uppercase;color:white;text-align:center;
+  padding:5px 0;font-weight:600;
+}
 `;
 
 /* ─── REVEAL HOOK ─── */
@@ -653,13 +711,513 @@ async function uploadToBucket(bucket, id, file) {
   if (!file) return null;
   const ext = file.name.split(".").pop();
   const path = `${id}.${ext}`;
-  await supabase.storage.from(bucket).upload(path, file, { upsert: true });
+
+  const { error } = await supabase.storage
+    .from(bucket)
+    .upload(path, file, { upsert: true });
+
+  if (error) {
+    console.error("Upload error:", error.message);
+    return null; // ← don't save a broken URL to the DB
+  }
+
   const { data } = supabase.storage.from(bucket).getPublicUrl(path);
+  console.log("FILE:", file);
+  console.log("IS FILE:", file instanceof File);
+  console.log("TYPE:", file?.type);
+  console.log("BUCKET:", bucket);
   return data.publicUrl;
 }
 
+/* ─── TEAM PHOTO HELPER ─── */
+// Handles both full URLs and bare filenames stored in photo_url
+function resolvePhotoUrl(photo_url) {
+  if (!photo_url) return null;
+  if (photo_url.startsWith("http")) return photo_url;
+  // bare filename — build public URL
+  const { data } = supabase.storage.from(TEAM_BUCKET).getPublicUrl(photo_url);
+  return data?.publicUrl ?? null;
+}
+
 /* ══════════════════════════════════════════════════════════════
-   ADMIN MANAGERS
+   TEAM MANAGER (Admin)
+══════════════════════════════════════════════════════════════ */
+
+const YEAR_OPTIONS = ["current", "2025-2026", "2024-2025"];
+
+const EMPTY_TEAM = {
+  name: "",
+  role: "",
+  dept: "",
+  init: "",
+  year: "current",
+  sort_order: 0,
+  photo_url: "",
+};
+
+function TeamManager() {
+  const [members, setMembers] = useState([]);
+  const [view, setView] = useState("list");
+  const [filterYear, setFilterYear] = useState("all");
+  const [form, setForm] = useState(EMPTY_TEAM);
+  const [photoFile, setPhotoFile] = useState(null);
+  const [preview, setPreview] = useState(null);
+  const [saving, setSaving] = useState(false);
+  const [deleting, setDeleting] = useState(null);
+  const [msg, setMsg] = useState(null);
+  const fileRef = useRef();
+
+  useEffect(() => {
+    load();
+  }, []);
+
+  async function load() {
+    const { data } = await supabase
+      .from("team_members")
+      .select("*")
+      .order("sort_order");
+    setMembers(data ?? []);
+  }
+
+  function openNew() {
+    setForm(EMPTY_TEAM);
+    setPhotoFile(null);
+    setPreview(null);
+    setView("new");
+    setMsg(null);
+  }
+
+  function openEdit(m) {
+    setForm({
+      name: m.name,
+      role: m.role,
+      dept: m.dept,
+      init: m.init,
+      year: m.year || "current",
+      sort_order: m.sort_order ?? 0,
+      photo_url: m.photo_url ?? "",
+    });
+    setPhotoFile(null);
+    setPreview(resolvePhotoUrl(m.photo_url));
+    setView(m.id);
+    setMsg(null);
+  }
+
+  function f(e) {
+    setForm((p) => ({ ...p, [e.target.name]: e.target.value }));
+  }
+
+  // Auto-generate initials from name if init is empty
+  function autoInit(name) {
+    return name
+      .split(" ")
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((w) => w[0].toUpperCase())
+      .join("");
+  }
+
+  async function save() {
+    if (!form.name || !form.role || !form.dept) {
+      setMsg({ t: "err", m: "Name, role, and department are required." });
+      return;
+    }
+    const payload = {
+      ...form,
+      init: form.init || autoInit(form.name),
+      sort_order: Number(form.sort_order) || 0,
+    };
+    setSaving(true);
+    try {
+      if (view === "new") {
+        // 1. Insert member first (without photo)
+        const { data: ins, error: insertErr } = await supabase
+          .from("team_members")
+          .insert([{ ...payload, photo_url: "" }])
+          .select()
+          .single();
+        if (insertErr) throw insertErr;
+
+        // 2. Upload photo if selected, then update the row
+        if (photoFile) {
+          const url = await uploadToBucket(TEAM_BUCKET, ins.id, photoFile);
+          if (url) {
+            const { error: updateErr } = await supabase
+              .from("team_members")
+              .update({ photo_url: url })
+              .eq("id", ins.id);
+            if (updateErr) throw updateErr;
+          } else {
+            // Upload failed — member saved, but warn the admin
+            setMsg({
+              t: "err",
+              m: "Member added, but photo upload failed. Check the console for details.",
+            });
+            await load();
+            setSaving(false);
+            return;
+          }
+        }
+      } else {
+        // Editing existing member
+        let photo_url = form.photo_url;
+
+        if (photoFile) {
+          const url = await uploadToBucket(TEAM_BUCKET, view, photoFile);
+          if (url) {
+            photo_url = url;
+          } else {
+            // Upload failed — don't overwrite the existing photo_url
+            setMsg({
+              t: "err",
+              m: "Photo upload failed. Changes saved without updating the photo.",
+            });
+            // Still save the other fields, just keep old photo_url
+          }
+        }
+
+        const { error: updateErr } = await supabase
+          .from("team_members")
+          .update({ ...payload, photo_url })
+          .eq("id", view);
+        if (updateErr) throw updateErr;
+      }
+
+      setMsg({
+        t: "ok",
+        m: view === "new" ? "Member added!" : "Member updated!",
+      });
+      await load();
+      setTimeout(() => {
+        setView("list");
+        setMsg(null);
+      }, 900);
+    } catch (e) {
+      setMsg({ t: "err", m: e.message });
+    }
+    setSaving(false);
+  }
+
+  async function del(m) {
+    if (!confirm(`Delete "${m.name}"?`)) return;
+    setDeleting(m.id);
+    // Optionally remove photo from storage
+    if (m.photo_url) {
+      const path = m.photo_url.split(`/${TEAM_BUCKET}/`)[1];
+      if (path) await supabase.storage.from(TEAM_BUCKET).remove([path]);
+    }
+    await supabase.from("team_members").delete().eq("id", m.id);
+    await load();
+    setDeleting(null);
+  }
+
+  const yearLabels = {
+    current: "2026–2027 (Current)",
+    "2025-2026": "2025–2026",
+    "2024-2025": "2024–2025 (Founders)",
+  };
+
+  const displayed =
+    filterYear === "all"
+      ? members
+      : members.filter((m) => (m.year || "current") === filterYear);
+
+  /* ── FORM VIEW ── */
+  if (view !== "list")
+    return (
+      <div className="mgr-form">
+        <button
+          className="mgr-back"
+          onClick={() => {
+            setView("list");
+            setMsg(null);
+          }}
+        >
+          ← Back to Team
+        </button>
+        <div className="mgr-form-title">
+          {view === "new" ? "Add Team Member" : "Edit Team Member"}
+        </div>
+        {msg && <div className={`mgr-msg ${msg.t}`}>{msg.m}</div>}
+
+        {/* Photo Upload */}
+        <div
+          style={{
+            marginBottom: 24,
+            display: "flex",
+            alignItems: "center",
+            gap: 20,
+          }}
+        >
+          <div
+            className="mgr-photo-drop"
+            onClick={() => fileRef.current.click()}
+            title="Click to upload photo"
+          >
+            {preview ? (
+              <img
+                src={preview}
+                alt="preview"
+                style={{ width: "100%", height: "100%", objectFit: "cover" }}
+              />
+            ) : (
+              <div style={{ textAlign: "center", padding: 12 }}>
+                <i
+                  className="fas fa-camera"
+                  style={{
+                    fontSize: 22,
+                    color: "var(--gray-400)",
+                    display: "block",
+                    marginBottom: 4,
+                  }}
+                />
+                <span
+                  style={{
+                    fontFamily: "var(--sans)",
+                    fontSize: 9,
+                    color: "var(--gray-400)",
+                    letterSpacing: 1,
+                    textTransform: "uppercase",
+                  }}
+                >
+                  Photo
+                </span>
+              </div>
+            )}
+            <div className="mgr-photo-drop-label">Upload</div>
+          </div>
+          <input
+            ref={fileRef}
+            type="file"
+            accept="image/*"
+            style={{ display: "none" }}
+            onChange={(e) => {
+              const file = e.target.files[0];
+              if (file) {
+                setPhotoFile(file);
+                setPreview(URL.createObjectURL(file));
+              }
+            }}
+          />
+          <div>
+            <div
+              style={{
+                fontFamily: "var(--sans)",
+                fontSize: 12,
+                color: "var(--gray-600)",
+                lineHeight: 1.7,
+              }}
+            >
+              Upload a square photo for best results.
+              <br />
+              Recommended: 200×200px or larger.
+              <br />
+              If left empty, initials will be shown.
+            </div>
+            {preview && (
+              <button
+                className="mgr-clear-img"
+                style={{ marginTop: 6 }}
+                onClick={() => {
+                  setPreview(null);
+                  setPhotoFile(null);
+                  setForm((p) => ({ ...p, photo_url: "" }));
+                }}
+              >
+                Remove photo
+              </button>
+            )}
+          </div>
+        </div>
+
+        <div className="mgr-grid">
+          <div className="mgr-field">
+            <label>Full Name *</label>
+            <input
+              name="name"
+              value={form.name}
+              onChange={f}
+              placeholder="Harshad Pakhale"
+            />
+          </div>
+          <div className="mgr-field">
+            <label>Initials (auto if blank)</label>
+            <input
+              name="init"
+              value={form.init}
+              onChange={f}
+              placeholder="HP"
+              maxLength={3}
+            />
+          </div>
+          <div className="mgr-field">
+            <label>Role / Position *</label>
+            <input
+              name="role"
+              value={form.role}
+              onChange={f}
+              placeholder="Founder & President"
+            />
+          </div>
+          <div className="mgr-field">
+            <label>Department *</label>
+            <input
+              name="dept"
+              value={form.dept}
+              onChange={f}
+              placeholder="Computer Engineering"
+            />
+          </div>
+          <div className="mgr-field">
+            <label>Year</label>
+            <select name="year" value={form.year} onChange={f}>
+              {YEAR_OPTIONS.map((y) => (
+                <option key={y} value={y}>
+                  {yearLabels[y] || y}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="mgr-field">
+            <label>Sort Order</label>
+            <input
+              name="sort_order"
+              type="number"
+              value={form.sort_order}
+              onChange={f}
+            />
+          </div>
+        </div>
+
+        <div className="mgr-form-actions">
+          <button
+            className="btn-adm cancel"
+            onClick={() => {
+              setView("list");
+              setMsg(null);
+            }}
+          >
+            Cancel
+          </button>
+          <button className="btn-adm primary" onClick={save} disabled={saving}>
+            {saving
+              ? "Saving…"
+              : view === "new"
+                ? "Add Member"
+                : "Save Changes"}
+          </button>
+        </div>
+      </div>
+    );
+
+  /* ── LIST VIEW ── */
+  return (
+    <div>
+      <div className="mgr-header">
+        <div className="mgr-title">
+          Team <span className="mgr-count">{members.length} members</span>
+        </div>
+        <button className="btn-adm primary" onClick={openNew}>
+          + Add Member
+        </button>
+      </div>
+
+      {/* Year filter tabs */}
+      <div
+        style={{
+          display: "flex",
+          gap: 0,
+          marginBottom: 20,
+          flexWrap: "wrap",
+          border: "1px solid var(--gray-200)",
+          width: "fit-content",
+        }}
+      >
+        {["all", ...YEAR_OPTIONS].map((y) => (
+          <button
+            key={y}
+            onClick={() => setFilterYear(y)}
+            style={{
+              padding: "8px 16px",
+              fontFamily: "var(--sans)",
+              fontSize: 11,
+              fontWeight: 600,
+              letterSpacing: "1.5px",
+              textTransform: "uppercase",
+              border: "none",
+              borderRight: "1px solid var(--gray-200)",
+              cursor: "pointer",
+              background: filterYear === y ? "#0a0a0a" : "#fff",
+              color: filterYear === y ? "white" : "var(--gray-400)",
+              transition: "all .15s",
+            }}
+          >
+            {y === "all" ? "All" : yearLabels[y] || y}
+          </button>
+        ))}
+      </div>
+
+      <div className="mgr-list">
+        {displayed.map((m) => {
+          const photoUrl = resolvePhotoUrl(m.photo_url);
+          return (
+            <div className="mgr-item" key={m.id}>
+              <div className="mgr-avatar">
+                {photoUrl ? <img src={photoUrl} alt={m.name} /> : m.init}
+              </div>
+              <div className="mgr-item-body">
+                <div className="mgr-item-name">{m.name}</div>
+                <div className="mgr-item-meta">
+                  <span className="mgr-tag mgr-tag-red">{m.role}</span>
+                  <span className="mgr-tag">{m.dept}</span>
+                  <span className="mgr-date">
+                    {yearLabels[m.year] || m.year}
+                  </span>
+                  {m.photo_url && (
+                    <span
+                      style={{
+                        fontSize: 10,
+                        color: "#22c55e",
+                        fontFamily: "var(--sans)",
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 3,
+                      }}
+                    >
+                      <i className="fas fa-image" /> Photo
+                    </span>
+                  )}
+                </div>
+              </div>
+              <div className="mgr-actions">
+                <button className="btn-adm edit" onClick={() => openEdit(m)}>
+                  Edit
+                </button>
+                <button
+                  className="btn-adm del"
+                  onClick={() => del(m)}
+                  disabled={deleting === m.id}
+                >
+                  {deleting === m.id ? "…" : "Delete"}
+                </button>
+              </div>
+            </div>
+          );
+        })}
+        {displayed.length === 0 && (
+          <div className="mgr-empty">
+            {members.length === 0
+              ? "No team members yet. Add your first one!"
+              : "No members for this year."}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+/* ══════════════════════════════════════════════════════════════
+   OTHER ADMIN MANAGERS (unchanged from original)
 ══════════════════════════════════════════════════════════════ */
 
 const EMPTY_EVENT = {
@@ -1309,8 +1867,7 @@ function MessagesManager() {
     <div className="admin-content">
       <div className="mgr-header">
         <div className="mgr-title">
-          Messages
-          <span className="mgr-count">{messages.length} total</span>
+          Messages <span className="mgr-count">{messages.length} total</span>
           {unreadCount > 0 && (
             <span
               style={{
@@ -1328,13 +1885,11 @@ function MessagesManager() {
           )}
         </div>
       </div>
-
       {error && (
         <div className="api-error">
           <i className="fas fa-exclamation-circle"></i> {error}
         </div>
       )}
-
       {messages.length === 0 ? (
         <div className="mgr-empty">No messages yet.</div>
       ) : (
@@ -1345,7 +1900,6 @@ function MessagesManager() {
               m.email +
               "?subject=" +
               encodeURIComponent("Re: " + m.subject);
-
             return (
               <div
                 key={m.id}
@@ -1376,7 +1930,6 @@ function MessagesManager() {
                     {m.first_name?.[0]}
                     {m.last_name?.[0]}
                   </div>
-
                   <div className="mgr-item-body">
                     <div
                       className="mgr-item-name"
@@ -1401,7 +1954,6 @@ function MessagesManager() {
                       </span>
                     </div>
                   </div>
-
                   <div
                     className="mgr-actions"
                     onClick={(e) => e.stopPropagation()}
@@ -1414,7 +1966,6 @@ function MessagesManager() {
                       <i className="fas fa-trash"></i>
                     </button>
                   </div>
-
                   <i
                     className={
                       "fas fa-chevron-" + (expanded === m.id ? "up" : "down")
@@ -1426,7 +1977,6 @@ function MessagesManager() {
                     }}
                   />
                 </div>
-
                 {expanded === m.id && (
                   <div
                     style={{
@@ -1440,7 +1990,6 @@ function MessagesManager() {
                     }}
                   >
                     <div style={{ paddingTop: 12 }}>{m.message}</div>
-
                     <a
                       href={replyHref}
                       style={{
@@ -1853,8 +2402,7 @@ function TestimonialsManager() {
 }
 
 /* ══════════════════════════════════════════════════════════════
-   ADMIN DASHBOARD
-
+   ADMIN DASHBOARD  — now includes Team tab
 ══════════════════════════════════════════════════════════════ */
 
 function AdminDashboard({ session, userRole, onLogout, onGoToSite }) {
@@ -1882,6 +2430,7 @@ function AdminDashboard({ session, userRole, onLogout, onGoToSite }) {
 
   const TABS = [
     { id: "overview", icon: "fa-th-large", label: "Overview" },
+    { id: "team", icon: "fa-users", label: "Team" }, // ← NEW
     { id: "events", icon: "fa-calendar", label: "Events" },
     { id: "gallery", icon: "fa-images", label: "Gallery" },
     { id: "testimonials", icon: "fa-quote-left", label: "Testimonials" },
@@ -1896,7 +2445,7 @@ function AdminDashboard({ session, userRole, onLogout, onGoToSite }) {
             className="admin-menu-toggle"
             onClick={() => setSidebarOpen((o) => !o)}
           >
-            <i className={`fas ${sidebarOpen ? "fa-times" : "fa-bars"}`}></i>
+            <i className={`fas ${sidebarOpen ? "fa-times" : "fa-bars"}`}></i>{" "}
             MENU
           </button>
           <div className="admin-topbar-logo">
@@ -1928,7 +2477,7 @@ function AdminDashboard({ session, userRole, onLogout, onGoToSite }) {
                 setSidebarOpen(false);
               }}
             >
-              <i className={`fas ${t.icon}`} style={{ width: 16 }}></i>
+              <i className={`fas ${t.icon}`} style={{ width: 16 }}></i>{" "}
               {t.label}
             </button>
           ))}
@@ -2021,6 +2570,7 @@ function AdminDashboard({ session, userRole, onLogout, onGoToSite }) {
               </div>
             </div>
           )}
+          {tab === "team" && <TeamManager />}
           {tab === "events" && <EventsManager />}
           {tab === "gallery" && <GalleryManager />}
           {tab === "testimonials" && <TestimonialsManager />}
@@ -2071,21 +2621,14 @@ function Footer({ onNav }) {
       <div className="footer-bottom">
         <span>© 2026 E-Cell MESWCOE. All rights reserved.</span>
         <div className="social-links">
-          <a
-            href="https://www.instagram.com/meswcoe_e_cell/"
-            target="_blank"
-            rel="noreferrer"
-            className="soc-link"
-          >
+          <a href="#" className="soc-link">
             <i className="fab fa-instagram"></i>
           </a>
-          <a
-            href="https://www.linkedin.com/company/meswcoe-e-cell/"
-            target="_blank"
-            rel="noreferrer"
-            className="soc-link"
-          >
+          <a href="#" className="soc-link">
             <i className="fab fa-linkedin-in"></i>
+          </a>
+          <a href="#" className="soc-link">
+            <i className="fab fa-twitter"></i>
           </a>
         </div>
       </div>
@@ -2946,7 +3489,7 @@ function EventsPage({ onNav }) {
   );
 }
 
-/* ─── GALLERY HELPERS ─── */
+/* ─── GALLERY ─── */
 const localGallery = [
   {
     id: 1,
@@ -3006,38 +3549,26 @@ const localGallery = [
   },
 ];
 
-/**
- * Reorders items so wide tiles (2 cols) always pair with 2 normal tiles
- * to fill a 4-column row perfectly, regardless of the order from the DB.
- * Row pattern: [wide(2 slots) + normal + normal] = 4 slots
- * Leftover normals fill rows of 4 by themselves.
- * Leftover wides with no normals to pair just append at the end.
- */
 function arrangeGallery(items) {
   const wides = items.filter((i) => i.wide);
   const normals = items.filter((i) => !i.wide);
   const result = [];
   let wi = 0,
     ni = 0;
-
   while (wi < wides.length || ni < normals.length) {
     if (wi < wides.length && ni + 1 < normals.length) {
-      // Perfect row: wide + 2 normals = 4 slots
       result.push(wides[wi++]);
       result.push(normals[ni++]);
       result.push(normals[ni++]);
     } else if (ni < normals.length) {
-      // No more wides — drain remaining normals
       result.push(normals[ni++]);
     } else {
-      // Leftover wide with no normals — just append
       result.push(wides[wi++]);
     }
   }
   return result;
 }
 
-/* ─── GALLERY PAGE ─── */
 function GalleryPage({ onNav }) {
   const [galleryItems, setGalleryItems] = useState(localGallery);
   const [loading, setLoading] = useState(false);
@@ -3054,7 +3585,6 @@ function GalleryPage({ onNav }) {
       .catch(() => setGalleryItems(localGallery))
       .finally(() => setLoading(false));
   }, []);
-
   useEffect(() => {
     if (!loading) reRunReveal();
   }, [loading]);
@@ -3071,12 +3601,11 @@ function GalleryPage({ onNav }) {
     nec: "NEC IIT Bombay",
     workshops: "Workshops",
   };
-
   const filtered =
     activeFilter === "all"
       ? galleryItems
       : galleryItems.filter((i) => i.cat === activeFilter);
-  const arranged = arrangeGallery(filtered); // ← dynamic order fix
+  const arranged = arrangeGallery(filtered);
 
   return (
     <div>
@@ -3095,12 +3624,6 @@ function GalleryPage({ onNav }) {
         </div>
       </div>
       <div style={{ height: 40 }}></div>
-      {error && (
-        <div className="api-error" style={{ margin: "0 var(--px) 24px" }}>
-          <i className="fas fa-exclamation-circle"></i> Could not load gallery:{" "}
-          {error}
-        </div>
-      )}
       {!loading && galleryItems.length > 0 && (
         <div className="gallery-filters">
           {filterCategories.map((cat) => (
@@ -3209,7 +3732,6 @@ function ContactPage({ onNav }) {
 
   const currentMembers = teamByYear[activeYear] || [];
 
-  // ── sanitize: strip HTML tags and trim
   const sanitize = (str) => str.replace(/<[^>]*>/g, "").trim();
 
   const VALID_SUBJECTS = [
@@ -3240,7 +3762,6 @@ function ContactPage({ onNav }) {
   const handleSubmit = async () => {
     setFormError("");
     setFormSuccess("");
-
     const cleaned = {
       first_name: sanitize(form.first_name).slice(0, 100),
       last_name: sanitize(form.last_name).slice(0, 100),
@@ -3248,21 +3769,17 @@ function ContactPage({ onNav }) {
       subject: sanitize(form.subject),
       message: sanitize(form.message).slice(0, 500),
     };
-
     const err = validate(cleaned);
     if (err) {
       setFormError(err);
       return;
     }
-
     setFormLoading(true);
     try {
       const { error } = await supabase
         .from("contact_messages")
         .insert([cleaned]);
-
       if (error) throw new Error(error.message);
-
       setFormSuccess("Message sent! We'll get back to you soon.");
       setForm({
         first_name: "",
@@ -3333,14 +3850,35 @@ function ContactPage({ onNav }) {
               </div>
             ))
           ) : currentMembers.length > 0 ? (
-            currentMembers.map((m, i) => (
-              <div className="team-card reveal" key={m.id || i}>
-                <div className="team-photo">{m.init}</div>
-                <div className="team-name">{m.name}</div>
-                <div className="team-role">{m.role}</div>
-                <div className="team-dept">{m.dept}</div>
-              </div>
-            ))
+            currentMembers.map((m, i) => {
+              const photoUrl = resolvePhotoUrl(m.photo_url);
+              return (
+                <div className="team-card reveal" key={m.id || i}>
+                  <div className="team-photo">
+                    {photoUrl ? (
+                      <img
+                        src={photoUrl}
+                        alt={m.name}
+                        onError={(e) => {
+                          // hide broken image, show initials
+                          e.target.style.display = "none";
+                          e.target.nextSibling.style.display = "flex";
+                        }}
+                      />
+                    ) : null}
+                    <span
+                      className="team-photo-initials"
+                      style={{ display: photoUrl ? "none" : "flex" }}
+                    >
+                      {m.init}
+                    </span>
+                  </div>
+                  <div className="team-name">{m.name}</div>
+                  <div className="team-role">{m.role}</div>
+                  <div className="team-dept">{m.dept}</div>
+                </div>
+              );
+            })
           ) : (
             <div className="team-empty">
               <i
@@ -3388,24 +3926,12 @@ function ContactPage({ onNav }) {
               <i className="fas fa-map-marker-alt"></i> MES Wadia College of
               Engineering, Pune
             </div>
-            <a
-              className="contact-detail"
-              href="https://www.instagram.com/meswcoe_e_cell/"
-              target="_blank"
-              rel="noreferrer"
-              style={{ textDecoration: "none", color: "inherit" }}
-            >
-              <i className="fab fa-instagram"></i> @meswcoe_e_cell
-            </a>
-            <a
-              className="contact-detail"
-              href="https://www.linkedin.com/company/meswcoe-e-cell/"
-              target="_blank"
-              rel="noreferrer"
-              style={{ textDecoration: "none", color: "inherit" }}
-            >
+            <div className="contact-detail">
+              <i className="fab fa-instagram"></i> @ecell.meswcoe
+            </div>
+            <div className="contact-detail">
               <i className="fab fa-linkedin-in"></i> E-Cell MESWCOE
-            </a>
+            </div>
           </div>
 
           <div className="form-box reveal">
@@ -3518,67 +4044,6 @@ function ContactPage({ onNav }) {
     </div>
   );
 }
-
-/* ─── JOIN MODAL ─── */
-// function JoinModal({ open, onClose }) {
-//   if (!open) return null;
-//   return (
-//     <div
-//       className="join-overlay open"
-//       onClick={(e) => e.target === e.currentTarget && onClose()}
-//     >
-//       <div className="join-box">
-//         <button className="join-close" onClick={onClose}>
-//           ✕
-//         </button>
-//         <div className="join-title">
-//           Join the
-//           <br />
-//           <span style={{ color: "var(--red)" }}>Movement.</span>
-//         </div>
-//         <p className="join-sub">
-//           Become part of Pune's most ambitious student entrepreneurship
-//           community.
-//         </p>
-//         <div className="form-row">
-//           <div className="form-group">
-//             <label>First Name</label>
-//             <input type="text" placeholder="First name" />
-//           </div>
-//           <div className="form-group">
-//             <label>Last Name</label>
-//             <input type="text" placeholder="Last name" />
-//           </div>
-//         </div>
-//         <div className="form-group">
-//           <label>Email</label>
-//           <input type="email" placeholder="you@email.com" />
-//         </div>
-//         <div className="form-group">
-//           <label>Year of Study</label>
-//           <select>
-//             <option>First Year (FE)</option>
-//             <option>Second Year (SE)</option>
-//             <option>Third Year (TE)</option>
-//             <option>Final Year (BE)</option>
-//           </select>
-//         </div>
-//         <div className="form-group">
-//           <label>Department</label>
-//           <input type="text" placeholder="e.g. Computer Engineering" />
-//         </div>
-//         <div className="form-group">
-//           <label>Why do you want to join?</label>
-//           <textarea rows="3" placeholder="Tell us briefly..."></textarea>
-//         </div>
-//         <button className="btn-send">
-//           Submit Application{" "}
-//           <i className="fas fa-arrow-right" style={{ marginLeft: 8 }}></i>
-//         </button>
-//       </div>
-//     </div>
-//   );
-// }
 
 /* ─── APP ─── */
 export default function App() {
@@ -3707,16 +4172,7 @@ export default function App() {
       />
       <nav>
         <div className="nav-logo" onClick={() => navTo("home")}>
-          <img
-            src={ecellLogo}
-            alt="E-Cell MESWCOE"
-            style={{
-              height: "52px",
-              width: "52px",
-              objectFit: "contain",
-              borderRadius: "50%",
-            }}
-          />
+          <div className="nav-logo-mark">E</div>
           <div>
             <div className="nav-logo-text">E-CELL</div>
             <div className="nav-logo-sub">MESWCOE</div>
@@ -3804,7 +4260,6 @@ export default function App() {
         {page === "gallery" && <GalleryPage onNav={navTo} />}
         {page === "contact" && <ContactPage onNav={navTo} />}
       </div>
-      {/* <JoinModal open={joinOpen} onClose={() => setJoinOpen(false)} /> */}
     </>
   );
 }
