@@ -10,6 +10,7 @@ import galIlluminate from "./assets/Gallery/Illuminate.png";
 import galInnovatExpo20 from "./assets/Gallery/InnovatExpo 2.0.png";
 import galInnovatExpo from "./assets/Gallery/InnovatExpo.png";
 import galProject from "./assets/Gallery/Project .png";
+import navLogo from "./assets/ecell-logo.png";
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || "";
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
@@ -3041,14 +3042,26 @@ function Footer({ onNav }) {
       <div className="footer-bottom">
         <span>© 2026 E-Cell MESWCOE. All rights reserved.</span>
         <div className="social-links">
-          <a href="#" className="soc-link">
+          <a
+            href="https://www.instagram.com/meswcoe_e_cell?igsh=Zmk2ZzBncDNuemls&utm_source=qr"
+            className="soc-link"
+          >
             <i className="fab fa-instagram"></i>
           </a>
-          <a href="#" className="soc-link">
+          <a
+            href="        https://www.linkedin.com/company/meswcoe-e-cell/"
+            className="soc-link"
+          >
             <i className="fab fa-linkedin-in"></i>
           </a>
-          <a href="#" className="soc-link">
+          <a href="https://x.com/ecellmeswcoe?s=11" className="soc-link">
             <i className="fab fa-twitter"></i>
+          </a>
+          <a
+            href="https://chat.whatsapp.com/B9khcm1zUf6DcK8C2GKFur?mode=gi_t"
+            className="soc-link"
+          >
+            <i className="fab fa-whatsapp"></i>
           </a>
         </div>
       </div>
@@ -4619,7 +4632,9 @@ export default function App() {
 
       <nav>
         <div className="nav-logo" onClick={() => navTo("home")}>
-          <div className="nav-logo-mark">E</div>
+          <div className="nav-logo-mark">
+            <img src={navLogo} alt="ecell" />
+          </div>
           <div>
             <div className="nav-logo-text">E-CELL</div>
             <div className="nav-logo-sub">MESWCOE</div>
