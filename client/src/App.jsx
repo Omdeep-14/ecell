@@ -3456,6 +3456,7 @@ function EventsPage({ onNav }) {
                 src={events[selectedEvent].image_url}
                 className="modal-ev-image"
                 alt={events[selectedEvent].title}
+                onError={(e) => console.error("Image failed:", e.target.src)}
               />
             )}
             <div className="modal-body-section">
