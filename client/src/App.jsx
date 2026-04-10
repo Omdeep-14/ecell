@@ -361,25 +361,85 @@ nav{
 .ev-desc{font-family:var(--sans);font-size:13px;color:var(--gray-400);line-height:1.8;}
 .ev-link{display:inline-flex;align-items:center;gap:8px;font-family:var(--sans);font-size:11px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:var(--black);margin-top:24px;border-bottom:1px solid var(--gray-200);transition:border-color .2s,color .2s;text-decoration:none;padding-bottom:2px;}
 .ev-link:hover{border-color:var(--black);color:var(--red);}
+.ev-card.featured-card{position:relative;}
+.ev-card.featured-card::before{content:'FEATURED';position:absolute;top:12px;right:12px;font-family:var(--sans);font-size:8px;letter-spacing:2px;background:var(--red);color:white;padding:3px 8px;font-weight:700;}
 
-/* GALLERY */
-.gallery-filters{display:flex;gap:4px;padding:0 var(--px);margin-bottom:36px;flex-wrap:wrap;}
+/* ═══════════════════════════════════════════════
+   GALLERY — Pinterest/Instagram masonry style
+═══════════════════════════════════════════════ */
+.gallery-filters{display:flex;gap:4px;padding:0 var(--px);margin-bottom:24px;flex-wrap:wrap;}
 .filter-btn{padding:8px 18px;border:1px solid var(--gray-200);background:#fff;font-family:var(--sans);font-size:11px;font-weight:600;letter-spacing:1px;text-transform:uppercase;cursor:pointer;transition:all .2s;}
 .filter-btn.active,.filter-btn:hover{background:#0a0a0a;color:white;border-color:#0a0a0a;}
-.gallery-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:3px;padding:0 var(--px) var(--section-py);}
-@media(min-width:640px){.gallery-grid{grid-template-columns:repeat(3,1fr);}}
-@media(min-width:900px){.gallery-grid{grid-template-columns:repeat(4,1fr);}}
-.gal-item{aspect-ratio:4/3;background:var(--gray-100);overflow:hidden;cursor:pointer;position:relative;}
-.gal-item.wide{grid-column:span 2;aspect-ratio:16/9;}
-.gal-placeholder{width:100%;height:100%;min-height:140px;background:linear-gradient(135deg,var(--gray-200),var(--gray-100));display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;transition:background .3s;}
-.gal-item:hover .gal-placeholder{background:linear-gradient(135deg,#ddd,#ccc);}
-.gal-real-img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .5s ease;}
+
+/* Masonry grid — CSS columns approach, no gaps */
+.gallery-masonry{
+  column-count:2;
+  column-gap:3px;
+  padding:0 var(--px) var(--section-py);
+}
+@media(min-width:640px){.gallery-masonry{column-count:3;}}
+@media(min-width:1024px){.gallery-masonry{column-count:4;}}
+
+.gal-item{
+  break-inside:avoid;
+  display:block;
+  position:relative;
+  margin-bottom:3px;
+  overflow:hidden;
+  cursor:pointer;
+  background:var(--gray-100);
+}
+.gal-real-img{
+  width:100%;
+  height:auto;
+  display:block;
+  transition:transform .5s ease;
+}
 .gal-item:hover .gal-real-img{transform:scale(1.04);}
+.gal-placeholder{
+  width:100%;
+  aspect-ratio:4/3;
+  background:linear-gradient(135deg,var(--gray-200),var(--gray-100));
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;
+}
 .gal-icon-el{font-size:22px;color:var(--gray-400);}
 .gal-label-el{font-family:var(--sans);font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--gray-400);}
-.gal-overlay{position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.75) 0%,transparent 60%);display:flex;align-items:flex-end;padding:16px 20px;opacity:0;transition:opacity .3s;}
+.gal-overlay{
+  position:absolute;inset:0;
+  background:linear-gradient(to top,rgba(0,0,0,.72) 0%,transparent 55%);
+  display:flex;align-items:flex-end;padding:14px 16px;
+  opacity:0;transition:opacity .3s;
+}
 .gal-item:hover .gal-overlay{opacity:1;}
 .gal-overlay span{font-family:var(--sans);color:white;font-size:11px;letter-spacing:2px;text-transform:uppercase;font-weight:600;}
+
+/* Lightbox */
+.lightbox-overlay{
+  display:none;position:fixed;inset:0;
+  background:rgba(0,0,0,.92);z-index:3000;
+  align-items:center;justify-content:center;
+  padding:20px;backdrop-filter:blur(6px);
+}
+.lightbox-overlay.open{display:flex;}
+.lightbox-img{
+  max-width:90vw;max-height:88vh;
+  object-fit:contain;display:block;
+  border:1px solid rgba(255,255,255,.08);
+}
+.lightbox-close{
+  position:fixed;top:20px;right:24px;
+  background:none;border:1px solid rgba(255,255,255,.2);
+  color:white;font-size:18px;cursor:pointer;
+  width:40px;height:40px;display:flex;align-items:center;justify-content:center;
+  transition:background .2s,border-color .2s;
+}
+.lightbox-close:hover{background:var(--red);border-color:var(--red);}
+.lightbox-label{
+  position:fixed;bottom:24px;left:50%;transform:translateX(-50%);
+  font-family:var(--sans);font-size:11px;letter-spacing:2px;
+  text-transform:uppercase;color:rgba(255,255,255,.4);
+  background:rgba(0,0,0,.5);padding:6px 16px;
+}
 
 /* TEAM */
 .team-section{padding:var(--section-py) var(--px);background:#fff;}
@@ -393,8 +453,6 @@ nav{
 @media(min-width:900px){.team-grid{grid-template-columns:repeat(4,1fr);}}
 .team-card{background:#fff;padding:36px 16px 28px;text-align:center;overflow:hidden;transition:background .3s;}
 .team-card:hover{background:var(--gray-100);}
-
-/* Team photo — supports both image and initials */
 .team-photo{
   border:1.5px solid #0a0a0a;
   background:transparent;
@@ -434,7 +492,6 @@ nav{
   font-size:22px;
   font-weight:700;
 }
-
 .team-name{font-family:var(--serif);font-size:16px;font-weight:700;color:#0a0a0a;padding:0 12px;margin-bottom:6px;line-height:1.2;}
 .team-role{font-family:var(--sans);font-size:10px;color:var(--red);letter-spacing:1.5px;text-transform:uppercase;padding:0 12px;font-weight:600;}
 .team-dept{font-family:var(--sans);font-size:11px;color:var(--gray-400);margin-top:5px;padding:0 12px;}
@@ -477,6 +534,154 @@ nav{
 .join-close{position:absolute;top:20px;right:20px;background:none;border:none;font-size:20px;color:var(--gray-400);cursor:pointer;}
 .join-title{font-family:var(--serif);font-size:clamp(40px,10vw,52px);font-weight:700;line-height:.95;margin-bottom:10px;}
 .join-sub{font-family:var(--sans);font-size:14px;color:var(--gray-400);margin-bottom:32px;line-height:1.7;}
+
+/* ═══════════════════════════════════════════════
+   FEATURED EVENT POPUP
+═══════════════════════════════════════════════ */
+.featured-popup-overlay{
+  display:none;
+  position:fixed;inset:0;
+  background:rgba(0,0,0,.6);
+  z-index:1500;
+  align-items:flex-end;justify-content:center;
+  backdrop-filter:blur(3px);
+  padding:0;
+}
+.featured-popup-overlay.open{display:flex;}
+
+@keyframes popupSlideUp{
+  from{opacity:0;transform:translateY(100%);}
+  to{opacity:1;transform:translateY(0);}
+}
+@keyframes popupFadeIn{
+  from{opacity:0;}
+  to{opacity:1;}
+}
+
+.featured-popup{
+  background:#fff;
+  width:100%;
+  max-width:520px;
+  max-height:90svh;
+  overflow-y:auto;
+  position:relative;
+  animation:popupSlideUp .45s cubic-bezier(.22,.68,0,1.2) forwards;
+  border-radius:0;
+  box-shadow:0 -20px 80px rgba(0,0,0,.35);
+}
+@media(min-width:640px){
+  .featured-popup-overlay{align-items:center;padding:20px;}
+  .featured-popup{
+    border-radius:0;
+    max-height:85svh;
+    animation:popupFadeIn .35s ease forwards,popupSlideUp .45s cubic-bezier(.22,.68,0,1.2) forwards;
+  }
+}
+
+.featured-popup-img{
+  width:100%;
+  height:200px;
+  object-fit:cover;
+  display:block;
+}
+@media(min-width:640px){.featured-popup-img{height:240px;}}
+
+.featured-popup-img-placeholder{
+  width:100%;height:160px;
+  background:linear-gradient(135deg,#111 0%,#1e1e1e 100%);
+  display:flex;align-items:center;justify-content:center;
+}
+.featured-popup-img-placeholder i{font-size:36px;color:rgba(255,255,255,.15);}
+
+.featured-popup-body{padding:28px 28px 20px;}
+@media(min-width:640px){.featured-popup-body{padding:32px 36px 24px;}}
+
+.featured-popup-tag{
+  font-family:var(--sans);font-size:9px;letter-spacing:3px;
+  text-transform:uppercase;color:var(--red);font-weight:700;
+  display:flex;align-items:center;gap:8px;margin-bottom:10px;
+}
+.featured-popup-tag::before{
+  content:'';display:inline-block;width:18px;height:1px;background:var(--red);
+}
+
+.featured-popup-title{
+  font-family:var(--serif);
+  font-size:clamp(26px,6vw,36px);
+  font-weight:700;line-height:1.05;
+  color:var(--black);margin-bottom:12px;
+}
+
+.featured-popup-desc{
+  font-family:var(--sans);font-size:13px;color:var(--gray-600);
+  line-height:1.8;margin-bottom:20px;
+  display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;
+}
+
+.featured-popup-deadline{
+  font-family:var(--sans);font-size:11px;color:var(--gray-400);
+  letter-spacing:.5px;margin-bottom:20px;
+  display:flex;align-items:center;gap:6px;
+}
+.featured-popup-deadline i{color:var(--red);}
+
+.featured-popup-actions{
+  display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px;
+}
+.featured-popup-btn-reg{
+  background:var(--red);color:white;
+  padding:12px 22px;font-family:var(--sans);
+  font-size:11px;font-weight:700;letter-spacing:1.5px;
+  text-transform:uppercase;text-decoration:none;
+  border:none;cursor:pointer;transition:background .2s;
+  display:inline-flex;align-items:center;gap:8px;
+  flex:1;justify-content:center;
+}
+.featured-popup-btn-reg:hover{background:var(--red-dark);}
+
+.featured-popup-btn-view{
+  background:transparent;color:var(--black);
+  border:1.5px solid var(--gray-200);
+  padding:12px 22px;font-family:var(--sans);
+  font-size:11px;font-weight:700;letter-spacing:1.5px;
+  text-transform:uppercase;cursor:pointer;
+  transition:all .2s;
+  display:inline-flex;align-items:center;gap:8px;
+  flex:1;justify-content:center;
+}
+.featured-popup-btn-view:hover{border-color:var(--black);background:var(--black);color:white;}
+
+.featured-popup-footer{
+  border-top:1px solid var(--gray-100);
+  padding:14px 28px;
+  display:flex;align-items:center;justify-content:space-between;
+  gap:12px;
+}
+@media(min-width:640px){.featured-popup-footer{padding:14px 36px;}}
+
+.featured-popup-dismiss{
+  display:flex;align-items:center;gap:8px;
+  cursor:pointer;font-family:var(--sans);
+  font-size:11px;color:var(--gray-400);
+  user-select:none;
+  background:none;border:none;padding:0;
+}
+.featured-popup-dismiss input[type=checkbox]{
+  accent-color:var(--red);cursor:pointer;
+  width:13px;height:13px;
+}
+.featured-popup-dismiss:hover{color:var(--black);}
+
+.featured-popup-close{
+  background:none;border:none;
+  color:var(--gray-400);cursor:pointer;
+  font-size:14px;padding:4px;
+  line-height:1;transition:color .2s;
+  display:flex;align-items:center;gap:4px;
+  font-family:var(--sans);font-size:11px;font-weight:500;
+  letter-spacing:.5px;
+}
+.featured-popup-close:hover{color:var(--black);}
 
 /* FOOTER */
 footer{background:#0a0a0a;color:white;padding:80px var(--px) 40px;}
@@ -570,6 +775,7 @@ footer{background:#0a0a0a;color:white;padding:80px var(--px) 40px;}
 .mgr-item-meta{display:flex;flex-wrap:wrap;gap:6px;align-items:center;}
 .mgr-tag{font-family:var(--sans);font-size:10px;letter-spacing:1px;text-transform:uppercase;padding:2px 7px;background:var(--gray-100);border:1px solid var(--gray-200);color:var(--gray-600);}
 .mgr-tag-red{background:rgba(212,43,43,.08);border-color:rgba(212,43,43,.2);color:var(--red);}
+.mgr-tag-green{background:rgba(34,197,94,.08);border-color:rgba(34,197,94,.2);color:#15803d;}
 .mgr-tag-blue{background:#eff6ff;border-color:#bfdbfe;color:#1d4ed8;}
 .mgr-date{font-family:var(--sans);font-size:11px;color:var(--gray-400);}
 .mgr-excerpt{font-family:var(--sans);font-size:12px;color:var(--gray-400);margin-top:4px;line-height:1.5;}
@@ -605,6 +811,9 @@ footer{background:#0a0a0a;color:white;padding:80px var(--px) 40px;}
 .btn-adm.edit:hover{border-color:#888;}
 .btn-adm.del{background:transparent;color:var(--red);border:1px solid var(--red);}
 .btn-adm.del:hover:not(:disabled){background:var(--red);color:white;}
+.btn-adm.feature{background:transparent;color:var(--gray-400);border:1px solid var(--gray-200);display:inline-flex;align-items:center;gap:5px;}
+.btn-adm.feature:hover:not(:disabled){border-color:#f59e0b;color:#f59e0b;}
+.btn-adm.feature.active{background:#fef9c3;color:#b45309;border-color:#f59e0b;}
 .roles-add-box{background:#fff;border:1px solid var(--gray-200);padding:20px;margin-bottom:12px;}
 .roles-add-title{font-family:var(--sans);font-size:13px;font-weight:700;letter-spacing:.5px;margin-bottom:4px;}
 .roles-add-hint{font-family:var(--sans);font-size:12px;color:var(--gray-400);margin-bottom:12px;}
@@ -623,28 +832,10 @@ footer{background:#0a0a0a;color:white;padding:80px var(--px) 40px;}
 .admin-event-tag{font-family:var(--sans);font-size:11px;color:var(--red);letter-spacing:1px;text-transform:uppercase;}
 .admin-go-site{display:inline-flex;align-items:center;gap:8px;font-family:var(--sans);font-size:12px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--gray-600);border:1px solid var(--gray-200);padding:10px 18px;cursor:pointer;background:#fff;transition:all .2s;}
 .admin-go-site:hover{background:#0a0a0a;color:white;border-color:#0a0a0a;}
-
-/* Team photo avatar — circular preview in admin */
-.mgr-photo-preview{
-  width:72px;height:72px;border-radius:50%;
-  object-fit:cover;border:2px solid var(--gray-200);
-  display:block;
-}
-.mgr-photo-drop{
-  border:1px dashed var(--gray-200);background:var(--gray-100);
-  display:flex;align-items:center;justify-content:center;
-  cursor:pointer;transition:border-color .15s;
-  width:110px;height:110px;border-radius:50%;overflow:hidden;
-  position:relative;
-}
+.mgr-photo-preview{width:72px;height:72px;border-radius:50%;object-fit:cover;border:2px solid var(--gray-200);display:block;}
+.mgr-photo-drop{border:1px dashed var(--gray-200);background:var(--gray-100);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:border-color .15s;width:110px;height:110px;border-radius:50%;overflow:hidden;position:relative;}
 .mgr-photo-drop:hover{border-color:var(--red);}
-.mgr-photo-drop-label{
-  position:absolute;bottom:0;left:0;right:0;
-  background:rgba(0,0,0,.55);
-  font-family:var(--sans);font-size:9px;letter-spacing:1px;
-  text-transform:uppercase;color:white;text-align:center;
-  padding:5px 0;font-weight:600;
-}
+.mgr-photo-drop-label{position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,.55);font-family:var(--sans);font-size:9px;letter-spacing:1px;text-transform:uppercase;color:white;text-align:center;padding:5px 0;font-weight:600;}
 `;
 
 /* ─── REVEAL HOOK ─── */
@@ -711,32 +902,141 @@ async function uploadToBucket(bucket, id, file) {
   if (!file) return null;
   const ext = file.name.split(".").pop();
   const path = `${id}.${ext}`;
-
   const { error } = await supabase.storage
     .from(bucket)
     .upload(path, file, { upsert: true });
-
   if (error) {
     console.error("Upload error:", error.message);
-    return null; // ← don't save a broken URL to the DB
+    return null;
   }
-
   const { data } = supabase.storage.from(bucket).getPublicUrl(path);
-  console.log("FILE:", file);
-  console.log("IS FILE:", file instanceof File);
-  console.log("TYPE:", file?.type);
-  console.log("BUCKET:", bucket);
   return data.publicUrl;
 }
 
-/* ─── TEAM PHOTO HELPER ─── */
-// Handles both full URLs and bare filenames stored in photo_url
 function resolvePhotoUrl(photo_url) {
   if (!photo_url) return null;
   if (photo_url.startsWith("http")) return photo_url;
-  // bare filename — build public URL
   const { data } = supabase.storage.from(TEAM_BUCKET).getPublicUrl(photo_url);
   return data?.publicUrl ?? null;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   FEATURED EVENT POPUP (Visitor-facing)
+══════════════════════════════════════════════════════════════ */
+function FeaturedEventPopup({ onViewEvents }) {
+  const [event, setEvent] = useState(null);
+  const [open, setOpen] = useState(false);
+  const [dontShow, setDontShow] = useState(false);
+
+  useEffect(() => {
+    // Fetch the featured event
+    supabase
+      .from("events")
+      .select("*")
+      .eq("featured", true)
+      .single()
+      .then(({ data }) => {
+        if (!data) return;
+
+        // Check localStorage — user permanently dismissed this event
+        const dismissedKey = `ecell_popup_dismissed_${data.id}`;
+        if (localStorage.getItem(dismissedKey) === "true") return;
+
+        // Check sessionStorage — already shown this session
+        const sessionKey = `ecell_popup_shown_${data.id}`;
+        if (sessionStorage.getItem(sessionKey) === "true") return;
+
+        setEvent(data);
+        // Show after 1.5s delay
+        setTimeout(() => {
+          setOpen(true);
+          sessionStorage.setItem(sessionKey, "true");
+        }, 1500);
+      });
+  }, []);
+
+  function handleClose() {
+    if (dontShow && event) {
+      localStorage.setItem(`ecell_popup_dismissed_${event.id}`, "true");
+    }
+    setOpen(false);
+  }
+
+  if (!event) return null;
+
+  return (
+    <div
+      className={`featured-popup-overlay${open ? " open" : ""}`}
+      onClick={(e) => e.target === e.currentTarget && handleClose()}
+    >
+      <div className="featured-popup">
+        {event.image_url ? (
+          <img
+            src={event.image_url}
+            alt={event.title}
+            className="featured-popup-img"
+          />
+        ) : (
+          <div className="featured-popup-img-placeholder">
+            <i className="fas fa-calendar-star" />
+          </div>
+        )}
+
+        <div className="featured-popup-body">
+          <div className="featured-popup-tag">
+            {event.date} · {event.tag}
+          </div>
+          <div className="featured-popup-title">{event.title}</div>
+          <div className="featured-popup-desc">{event.content}</div>
+          {event.registration_deadline && (
+            <div className="featured-popup-deadline">
+              <i className="fas fa-clock" />
+              Registration closes:{" "}
+              <strong style={{ color: "var(--black)" }}>
+                {event.registration_deadline}
+              </strong>
+            </div>
+          )}
+          <div className="featured-popup-actions">
+            {event.form_link && (
+              <a
+                href={event.form_link}
+                target="_blank"
+                rel="noreferrer"
+                className="featured-popup-btn-reg"
+                onClick={handleClose}
+              >
+                Register Now <i className="fas fa-arrow-right" />
+              </a>
+            )}
+            <button
+              className="featured-popup-btn-view"
+              onClick={() => {
+                handleClose();
+                onViewEvents();
+              }}
+            >
+              View Details
+            </button>
+          </div>
+        </div>
+
+        <div className="featured-popup-footer">
+          <label className="featured-popup-dismiss">
+            <input
+              type="checkbox"
+              checked={dontShow}
+              onChange={(e) => setDontShow(e.target.checked)}
+            />
+            Don't show this again
+          </label>
+          <button className="featured-popup-close" onClick={handleClose}>
+            <i className="fas fa-times" /> Close
+          </button>
+        </div>
+      </div>
+    </div>
+  );
 }
 
 /* ══════════════════════════════════════════════════════════════
@@ -807,7 +1107,6 @@ function TeamManager() {
     setForm((p) => ({ ...p, [e.target.name]: e.target.value }));
   }
 
-  // Auto-generate initials from name if init is empty
   function autoInit(name) {
     return name
       .split(" ")
@@ -830,15 +1129,12 @@ function TeamManager() {
     setSaving(true);
     try {
       if (view === "new") {
-        // 1. Insert member first (without photo)
         const { data: ins, error: insertErr } = await supabase
           .from("team_members")
           .insert([{ ...payload, photo_url: "" }])
           .select()
           .single();
         if (insertErr) throw insertErr;
-
-        // 2. Upload photo if selected, then update the row
         if (photoFile) {
           const url = await uploadToBucket(TEAM_BUCKET, ins.id, photoFile);
           if (url) {
@@ -848,41 +1144,31 @@ function TeamManager() {
               .eq("id", ins.id);
             if (updateErr) throw updateErr;
           } else {
-            // Upload failed — member saved, but warn the admin
-            setMsg({
-              t: "err",
-              m: "Member added, but photo upload failed. Check the console for details.",
-            });
+            setMsg({ t: "err", m: "Member added, but photo upload failed." });
             await load();
             setSaving(false);
             return;
           }
         }
       } else {
-        // Editing existing member
         let photo_url = form.photo_url;
-
         if (photoFile) {
           const url = await uploadToBucket(TEAM_BUCKET, view, photoFile);
           if (url) {
             photo_url = url;
           } else {
-            // Upload failed — don't overwrite the existing photo_url
             setMsg({
               t: "err",
               m: "Photo upload failed. Changes saved without updating the photo.",
             });
-            // Still save the other fields, just keep old photo_url
           }
         }
-
         const { error: updateErr } = await supabase
           .from("team_members")
           .update({ ...payload, photo_url })
           .eq("id", view);
         if (updateErr) throw updateErr;
       }
-
       setMsg({
         t: "ok",
         m: view === "new" ? "Member added!" : "Member updated!",
@@ -901,7 +1187,6 @@ function TeamManager() {
   async function del(m) {
     if (!confirm(`Delete "${m.name}"?`)) return;
     setDeleting(m.id);
-    // Optionally remove photo from storage
     if (m.photo_url) {
       const path = m.photo_url.split(`/${TEAM_BUCKET}/`)[1];
       if (path) await supabase.storage.from(TEAM_BUCKET).remove([path]);
@@ -922,7 +1207,6 @@ function TeamManager() {
       ? members
       : members.filter((m) => (m.year || "current") === filterYear);
 
-  /* ── FORM VIEW ── */
   if (view !== "list")
     return (
       <div className="mgr-form">
@@ -939,8 +1223,6 @@ function TeamManager() {
           {view === "new" ? "Add Team Member" : "Edit Team Member"}
         </div>
         {msg && <div className={`mgr-msg ${msg.t}`}>{msg.m}</div>}
-
-        {/* Photo Upload */}
         <div
           style={{
             marginBottom: 24,
@@ -1029,7 +1311,6 @@ function TeamManager() {
             )}
           </div>
         </div>
-
         <div className="mgr-grid">
           <div className="mgr-field">
             <label>Full Name *</label>
@@ -1088,7 +1369,6 @@ function TeamManager() {
             />
           </div>
         </div>
-
         <div className="mgr-form-actions">
           <button
             className="btn-adm cancel"
@@ -1110,7 +1390,6 @@ function TeamManager() {
       </div>
     );
 
-  /* ── LIST VIEW ── */
   return (
     <div>
       <div className="mgr-header">
@@ -1121,8 +1400,6 @@ function TeamManager() {
           + Add Member
         </button>
       </div>
-
-      {/* Year filter tabs */}
       <div
         style={{
           display: "flex",
@@ -1156,7 +1433,6 @@ function TeamManager() {
           </button>
         ))}
       </div>
-
       <div className="mgr-list">
         {displayed.map((m) => {
           const photoUrl = resolvePhotoUrl(m.photo_url);
@@ -1217,7 +1493,7 @@ function TeamManager() {
 }
 
 /* ══════════════════════════════════════════════════════════════
-   OTHER ADMIN MANAGERS (unchanged from original)
+   EVENTS MANAGER — with Featured toggle
 ══════════════════════════════════════════════════════════════ */
 
 const EMPTY_EVENT = {
@@ -1229,6 +1505,7 @@ const EMPTY_EVENT = {
   form_link: "",
   image_url: "",
   sort_order: 0,
+  featured: false,
 };
 
 function EventsManager() {
@@ -1239,6 +1516,7 @@ function EventsManager() {
   const [preview, setPreview] = useState(null);
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(null);
+  const [featuring, setFeaturing] = useState(null);
   const [msg, setMsg] = useState(null);
   const fileRef = useRef();
 
@@ -1259,6 +1537,7 @@ function EventsManager() {
     setImgFile(null);
     setPreview(null);
     setView("new");
+    setMsg(null);
   }
   function openEdit(ev) {
     setForm({
@@ -1270,13 +1549,40 @@ function EventsManager() {
       form_link: ev.form_link ?? "",
       image_url: ev.image_url ?? "",
       sort_order: ev.sort_order ?? 0,
+      featured: ev.featured ?? false,
     });
     setImgFile(null);
     setPreview(ev.image_url || null);
     setView(ev.id);
+    setMsg(null);
   }
   function f(e) {
-    setForm((p) => ({ ...p, [e.target.name]: e.target.value }));
+    const val =
+      e.target.type === "checkbox" ? e.target.checked : e.target.value;
+    setForm((p) => ({ ...p, [e.target.name]: val }));
+  }
+
+  // Toggle featured — only one can be featured at a time
+  async function toggleFeatured(ev) {
+    setFeaturing(ev.id);
+    try {
+      const newVal = !ev.featured;
+      if (newVal) {
+        // Unfeature all others first
+        await supabase
+          .from("events")
+          .update({ featured: false })
+          .neq("id", ev.id);
+      }
+      await supabase
+        .from("events")
+        .update({ featured: newVal })
+        .eq("id", ev.id);
+      await load();
+    } catch (e) {
+      console.error(e);
+    }
+    setFeaturing(null);
   }
 
   async function save() {
@@ -1289,6 +1595,17 @@ function EventsManager() {
     }
     setSaving(true);
     try {
+      // If marking this as featured, unfeature others first
+      if (form.featured) {
+        const currentId = view !== "new" ? view : null;
+        if (currentId)
+          await supabase
+            .from("events")
+            .update({ featured: false })
+            .neq("id", currentId);
+        else await supabase.from("events").update({ featured: false });
+      }
+
       if (view === "new") {
         const { data: ins, error } = await supabase
           .from("events")
@@ -1414,6 +1731,41 @@ function EventsManager() {
               onChange={f}
             />
           </div>
+          <div className="mgr-field check" style={{ gridColumn: "1/-1" }}>
+            <label
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 8,
+                cursor: "pointer",
+              }}
+            >
+              <input
+                name="featured"
+                type="checkbox"
+                checked={form.featured}
+                onChange={f}
+                style={{ accentColor: "var(--red)", width: 14, height: 14 }}
+              />
+              <span>⭐ Feature this event (shows as a popup to visitors)</span>
+            </label>
+            {form.featured && (
+              <div
+                style={{
+                  fontFamily: "var(--sans)",
+                  fontSize: 11,
+                  color: "#b45309",
+                  background: "#fef9c3",
+                  padding: "6px 10px",
+                  marginTop: 6,
+                  border: "1px solid #f59e0b",
+                }}
+              >
+                Only one event can be featured at a time. Enabling this will
+                unfeature all others.
+              </div>
+            )}
+          </div>
           <div className="mgr-field full">
             <label>Description *</label>
             <textarea
@@ -1492,7 +1844,13 @@ function EventsManager() {
       </div>
       <div className="mgr-list">
         {events.map((ev) => (
-          <div className="mgr-item" key={ev.id}>
+          <div
+            className="mgr-item"
+            key={ev.id}
+            style={{
+              borderLeft: ev.featured ? "3px solid #f59e0b" : undefined,
+            }}
+          >
             {ev.image_url ? (
               <img
                 src={ev.image_url}
@@ -1505,7 +1863,28 @@ function EventsManager() {
               </div>
             )}
             <div className="mgr-item-body">
-              <div className="mgr-item-name">{ev.title}</div>
+              <div
+                className="mgr-item-name"
+                style={{ display: "flex", alignItems: "center", gap: 8 }}
+              >
+                {ev.title}
+                {ev.featured && (
+                  <span
+                    style={{
+                      fontSize: 9,
+                      fontFamily: "var(--sans)",
+                      fontWeight: 700,
+                      letterSpacing: 1,
+                      background: "#fef9c3",
+                      color: "#b45309",
+                      border: "1px solid #f59e0b",
+                      padding: "1px 6px",
+                    }}
+                  >
+                    ⭐ FEATURED
+                  </span>
+                )}
+              </div>
               <div className="mgr-item-meta">
                 <span className="mgr-tag mgr-tag-red">{ev.tag}</span>
                 <span className="mgr-date">{ev.date}</span>
@@ -1528,6 +1907,20 @@ function EventsManager() {
               <div className="mgr-excerpt">{ev.content?.slice(0, 100)}…</div>
             </div>
             <div className="mgr-actions">
+              <button
+                className={`btn-adm feature${ev.featured ? " active" : ""}`}
+                onClick={() => toggleFeatured(ev)}
+                disabled={featuring === ev.id}
+                title={
+                  ev.featured ? "Remove from featured" : "Set as featured popup"
+                }
+              >
+                {featuring === ev.id
+                  ? "…"
+                  : ev.featured
+                    ? "⭐ Featured"
+                    : "☆ Feature"}
+              </button>
               <button className="btn-adm edit" onClick={() => openEdit(ev)}>
                 Edit
               </button>
@@ -1548,6 +1941,10 @@ function EventsManager() {
     </div>
   );
 }
+
+/* ══════════════════════════════════════════════════════════════
+   GALLERY MANAGER
+══════════════════════════════════════════════════════════════ */
 
 const EMPTY_GAL = {
   label: "",
@@ -1860,7 +2257,6 @@ function MessagesManager() {
   };
 
   const unreadCount = messages.filter((m) => !m.read).length;
-
   if (loading) return <LoadingSkeleton rows={5} />;
 
   return (
@@ -2402,7 +2798,7 @@ function TestimonialsManager() {
 }
 
 /* ══════════════════════════════════════════════════════════════
-   ADMIN DASHBOARD  — now includes Team tab
+   ADMIN DASHBOARD
 ══════════════════════════════════════════════════════════════ */
 
 function AdminDashboard({ session, userRole, onLogout, onGoToSite }) {
@@ -2430,7 +2826,7 @@ function AdminDashboard({ session, userRole, onLogout, onGoToSite }) {
 
   const TABS = [
     { id: "overview", icon: "fa-th-large", label: "Overview" },
-    { id: "team", icon: "fa-users", label: "Team" }, // ← NEW
+    { id: "team", icon: "fa-users", label: "Team" },
     { id: "events", icon: "fa-calendar", label: "Events" },
     { id: "gallery", icon: "fa-images", label: "Gallery" },
     { id: "testimonials", icon: "fa-quote-left", label: "Testimonials" },
@@ -2559,7 +2955,31 @@ function AdminDashboard({ session, userRole, onLogout, onGoToSite }) {
                         {String(i + 1).padStart(2, "0")}
                       </div>
                       <div>
-                        <div className="admin-event-name">{ev.title}</div>
+                        <div
+                          className="admin-event-name"
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 8,
+                          }}
+                        >
+                          {ev.title}
+                          {ev.featured && (
+                            <span
+                              style={{
+                                fontSize: 9,
+                                background: "#fef9c3",
+                                color: "#b45309",
+                                border: "1px solid #f59e0b",
+                                padding: "1px 5px",
+                                fontFamily: "var(--sans)",
+                                fontWeight: 700,
+                              }}
+                            >
+                              ⭐ Featured
+                            </span>
+                          )}
+                        </div>
                         <div className="admin-event-tag">
                           {ev.date} · {ev.tag}
                         </div>
@@ -2787,7 +3207,6 @@ function HomePage({ onNav, onJoin }) {
         <img src={heroPhoto} alt="E-Cell Team" className="hero-bg-img" />
         <div className="hero-overlay" />
         <div className="hero-content">
-          <div className="hero-bg-text">EC</div>
           <div className="hero-badge reveal">
             <span></span>Est. July 22, 2023 — MESWCOE, Pune
           </div>
@@ -3409,7 +3828,7 @@ function EventsPage({ onNav }) {
             ))
           : events.map((ev, i) => (
               <div
-                className="ev-card reveal"
+                className={`ev-card reveal${ev.featured ? " featured-card" : ""}`}
                 key={ev.id || i}
                 onClick={() => setSelectedEvent(i)}
               >
@@ -3456,7 +3875,6 @@ function EventsPage({ onNav }) {
                 src={events[selectedEvent].image_url}
                 className="modal-ev-image"
                 alt={events[selectedEvent].title}
-                onError={(e) => console.error("Image failed:", e.target.src)}
               />
             )}
             <div className="modal-body-section">
@@ -3490,7 +3908,7 @@ function EventsPage({ onNav }) {
   );
 }
 
-/* ─── GALLERY ─── */
+/* ─── GALLERY — Pinterest/Masonry style ─── */
 const localGallery = [
   {
     id: 1,
@@ -3550,31 +3968,11 @@ const localGallery = [
   },
 ];
 
-function arrangeGallery(items) {
-  const wides = items.filter((i) => i.wide);
-  const normals = items.filter((i) => !i.wide);
-  const result = [];
-  let wi = 0,
-    ni = 0;
-  while (wi < wides.length || ni < normals.length) {
-    if (wi < wides.length && ni + 1 < normals.length) {
-      result.push(wides[wi++]);
-      result.push(normals[ni++]);
-      result.push(normals[ni++]);
-    } else if (ni < normals.length) {
-      result.push(normals[ni++]);
-    } else {
-      result.push(wides[wi++]);
-    }
-  }
-  return result;
-}
-
 function GalleryPage({ onNav }) {
   const [galleryItems, setGalleryItems] = useState(localGallery);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
   const [activeFilter, setActiveFilter] = useState("all");
+  const [lightbox, setLightbox] = useState(null); // { src, label }
   useReveal();
 
   useEffect(() => {
@@ -3590,6 +3988,15 @@ function GalleryPage({ onNav }) {
     if (!loading) reRunReveal();
   }, [loading]);
 
+  // Close lightbox on Escape
+  useEffect(() => {
+    const handler = (e) => {
+      if (e.key === "Escape") setLightbox(null);
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, []);
+
   const filterCategories = [
     "all",
     ...new Set(galleryItems.map((g) => g.cat).filter(Boolean)),
@@ -3602,11 +4009,11 @@ function GalleryPage({ onNav }) {
     nec: "NEC IIT Bombay",
     workshops: "Workshops",
   };
+
   const filtered =
     activeFilter === "all"
       ? galleryItems
       : galleryItems.filter((i) => i.cat === activeFilter);
-  const arranged = arrangeGallery(filtered);
 
   return (
     <div>
@@ -3624,7 +4031,8 @@ function GalleryPage({ onNav }) {
           </p>
         </div>
       </div>
-      <div style={{ height: 40 }}></div>
+      <div style={{ height: 32 }}></div>
+
       {!loading && galleryItems.length > 0 && (
         <div className="gallery-filters">
           {filterCategories.map((cat) => (
@@ -3638,17 +4046,30 @@ function GalleryPage({ onNav }) {
           ))}
         </div>
       )}
-      <div className="gallery-grid">
+
+      {/* Pinterest/Masonry grid — CSS columns, images natural height */}
+      <div className="gallery-masonry">
         {loading
           ? [0, 1, 2, 3, 4, 5, 6, 7].map((i) => (
-              <div className={`gal-item${i % 5 === 0 ? " wide" : ""}`} key={i}>
-                <div className="gal-placeholder skeleton"></div>
+              <div
+                className="gal-item"
+                key={i}
+                style={{ aspectRatio: i % 3 === 0 ? "3/4" : "4/3" }}
+              >
+                <div
+                  className="gal-placeholder skeleton"
+                  style={{ height: i % 3 === 0 ? 280 : 200 }}
+                ></div>
               </div>
             ))
-          : arranged.map((item, i) => (
+          : filtered.map((item, i) => (
               <div
-                className={`gal-item${item.wide ? " wide" : ""}`}
+                className="gal-item"
                 key={item.id || i}
+                onClick={() =>
+                  item.image_url &&
+                  setLightbox({ src: item.image_url, label: item.label })
+                }
               >
                 {item.image_url ? (
                   <>
@@ -3656,6 +4077,7 @@ function GalleryPage({ onNav }) {
                       src={item.image_url}
                       className="gal-real-img"
                       alt={item.label}
+                      loading="lazy"
                     />
                     <div className="gal-overlay">
                       <span>{item.label}</span>
@@ -3663,7 +4085,7 @@ function GalleryPage({ onNav }) {
                   </>
                 ) : (
                   <>
-                    <div className="gal-placeholder">
+                    <div className="gal-placeholder" style={{ height: 200 }}>
                       {item.icon && (
                         <i className={`fas ${item.icon} gal-icon-el`}></i>
                       )}
@@ -3677,6 +4099,26 @@ function GalleryPage({ onNav }) {
               </div>
             ))}
       </div>
+
+      {/* Lightbox */}
+      <div
+        className={`lightbox-overlay${lightbox ? " open" : ""}`}
+        onClick={() => setLightbox(null)}
+      >
+        <button className="lightbox-close" onClick={() => setLightbox(null)}>
+          ✕
+        </button>
+        {lightbox && (
+          <img
+            src={lightbox.src}
+            className="lightbox-img"
+            alt={lightbox.label}
+            onClick={(e) => e.stopPropagation()}
+          />
+        )}
+        {lightbox && <div className="lightbox-label">{lightbox.label}</div>}
+      </div>
+
       <Footer onNav={onNav} />
     </div>
   );
@@ -3732,9 +4174,7 @@ function ContactPage({ onNav }) {
   }, [activeYear]);
 
   const currentMembers = teamByYear[activeYear] || [];
-
   const sanitize = (str) => str.replace(/<[^>]*>/g, "").trim();
-
   const VALID_SUBJECTS = [
     "General Enquiry",
     "Collaboration / Sponsorship",
@@ -3742,7 +4182,6 @@ function ContactPage({ onNav }) {
     "Event Query",
     "Other",
   ];
-
   const validate = ({ first_name, last_name, email, subject, message }) => {
     if (!first_name) return "First name is required.";
     if (!last_name) return "Last name is required.";
@@ -3861,7 +4300,6 @@ function ContactPage({ onNav }) {
                         src={photoUrl}
                         alt={m.name}
                         onError={(e) => {
-                          // hide broken image, show initials
                           e.target.style.display = "none";
                           e.target.nextSibling.style.display = "flex";
                         }}
@@ -3934,7 +4372,6 @@ function ContactPage({ onNav }) {
               <i className="fab fa-linkedin-in"></i> E-Cell MESWCOE
             </div>
           </div>
-
           <div className="form-box reveal">
             {formError && (
               <div className="api-error" style={{ marginBottom: 16 }}>
@@ -4164,6 +4601,9 @@ export default function App() {
       </>
     );
 
+  // Only show popup on public-facing pages (not admin)
+  const isAdminView = authView === "login" || authView === "dashboard";
+
   return (
     <>
       <style>{css}</style>
@@ -4171,6 +4611,12 @@ export default function App() {
         rel="stylesheet"
         href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
       />
+
+      {/* Featured Event Popup — visitor only, not in admin */}
+      {!isAdminView && (
+        <FeaturedEventPopup onViewEvents={() => navTo("events")} />
+      )}
+
       <nav>
         <div className="nav-logo" onClick={() => navTo("home")}>
           <div className="nav-logo-mark">E</div>
@@ -4214,6 +4660,7 @@ export default function App() {
           <i className={`fas ${mobileMenuOpen ? "fa-times" : "fa-bars"}`}></i>
         </button>
       </nav>
+
       <div className={`mobile-menu${mobileMenuOpen ? " open" : ""}`}>
         {[
           ["home", "Home"],
@@ -4252,6 +4699,7 @@ export default function App() {
           Join the Movement
         </button>
       </div>
+
       <div style={{ paddingTop: 60 }}>
         {page === "home" && (
           <HomePage onNav={navTo} onJoin={() => setJoinOpen(true)} />
